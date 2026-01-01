@@ -77,7 +77,7 @@ class AuthController extends Controller
         $userPayload = [
             'id' => (string) $user->id,
             'name' => $user->name ?? '',
-            'user_type' => (int) $user->user_type,
+            'user_type' => (int) $user->user_type->value,
             'email' => $user->email,
             'location' => [
                 'latitude' => $location['latitude'] ?? null,

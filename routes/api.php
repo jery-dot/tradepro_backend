@@ -45,7 +45,13 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/skills', [SkillController::class, 'getSkills']);
 
     // JobPost
-    Route::post('/create_job', [JobPostController::class, 'createJob']);
+    Route::controller(JobPostController::class)->group(function () {
+        Route::post('/create_job', 'createJob');
+        Route::get('/jobs', 'listJobs');
+        Route::post('/edit_job', 'editJob');
+        Route::post('/delete_job', 'deleteJob');
+        Route::post('/jobs/update-status', 'updateJobStatus');
+    });
 
     // Specialization
      Route::get('/specializations', [SpecializationController::class, 'index']);

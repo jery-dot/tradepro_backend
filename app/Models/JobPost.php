@@ -11,15 +11,20 @@ class JobPost extends Model
     protected $table = 'job_posts';
 
     protected $fillable = [
+        'title',
+        'company_name',
         'job_code',
         'user_id',
         'specialization_id',
         'start_date',
         'duration_value',
         'duration_unit',
-        'pay_range',
+        'pay_rate_amount',
+        'pay_rate_currency',
+        'pay_rate_type',
         'location_lat',
         'location_lng',
+        'city',
         'job_description',
         'is_featured',
         'status',
@@ -28,11 +33,11 @@ class JobPost extends Model
     protected function casts(): array
     {
         return [
-            'start_date' => 'date',
-            'pay_range' => 'float',
-            'location_lat' => 'float',
-            'location_lng' => 'float',
-            'is_featured' => 'boolean',
+            'start_date'    => 'date',
+            'pay_rate_amount' => 'float',
+            'location_lat'  => 'float',
+            'location_lng'  => 'float',
+            'is_featured'   => 'boolean',
         ];
     }
 
