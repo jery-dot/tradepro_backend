@@ -40,9 +40,14 @@ class JobPost extends Model
             'is_featured'   => 'boolean',
         ];
     }
-
     public function skills(): BelongsToMany
     {
         return $this->belongsToMany(Skill::class, 'job_post_skill');
     }
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
 }

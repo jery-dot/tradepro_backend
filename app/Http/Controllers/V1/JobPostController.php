@@ -376,4 +376,143 @@ class JobPostController extends Controller
         ]);
     }
 
+    /**
+     * POST /api/jobs/search
+     */
+    public function searchJobs(Request $request)
+    {
+        $validated = $request->validate([
+            'skill' => 'nullable|string',
+            'availability_today' => 'nullable|boolean',
+
+            'location' => 'nullable|array',
+            'location.name' => 'nullable|string',
+            'location.latitude' => 'nullable|numeric|between:-90,90',
+            'location.longitude' => 'nullable|numeric|between:-180,180',
+
+            'search_radius_miles' => 'nullable|numeric|min:1',
+
+            'filters' => 'nullable|array',
+            'filters.start_date' => 'nullable|date',
+            'filters.duration_months' => 'nullable|integer|min:1',
+            'filters.minimum_pay_rate' => 'nullable|numeric|min:0',
+            'filters.pay_unit' => 'nullable|string|in:hour,day,week,month',
+
+            'pagination' => 'nullable|array',
+            'pagination.page' => 'nullable|integer|min:1',
+            'pagination.limit' => 'nullable|integer|min:1|max:100',
+        ]); // Optional filters handled via nullable rules.[web:466][web:469]
+
+        $skill = $validated['skill'] ?? null;
+        $availabilityToday = (bool) ($validated['availability_today'] ?? false);
+        $location = $validated['location'] ?? [];
+        $filters = $validated['filters'] ?? [];
+        $pagination = $validated['pagination'] ?? [];
+
+        $page = (int) ($pagination['page'] ?? 1);
+        $limit = (int) ($pagination['limit'] ?? 10);
+        $limit = $limit > 0 ? min($limit, 100) : 10; // respect frontend limit but cap it.[web:296][web:435]
+
+        $lat = $location['latitude'] ?? null;
+        $lng = $location['longitude'] ?? null;
+        $radius = $validated['search_radius_miles'] ?? 25;
+        $query = JobPost::query()
+            ->with('owner');
+            // ->where('status', 'active'); // base filter.
+
+        if ($skill) {
+            $query->where('title', 'like', '%'.$skill.'%');
+        }
+
+        if ($availabilityToday) {
+            $query->whereHas('owner', function ($q) {
+                $q->where('available_today', true);
+            });
+        }
+
+        // Location + radius (Haversine in miles)
+        if ($lat !== null && $lng !== null) {
+            $haversine = '(3959 * acos(
+            cos(radians(?)) * cos(radians(location_lat)) *
+            cos(radians(location_lng) - radians(?)) +
+            sin(radians(?)) * sin(radians(location_lat))
+        ))'; // standard great‑circle distance formula.[web:442][web:437]
+
+            $query->select('*')
+                ->selectRaw("$haversine AS distance_miles", [$lat, $lng, $lat])
+                ->having('distance_miles', '<=', $radius)
+                ->orderBy('distance_miles');
+        }
+
+        // Filters
+        if (! empty($filters['start_date'])) {
+            $query->whereDate('start_date', '>=', $filters['start_date']);
+        }
+
+        if (! empty($filters['duration_months'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('duration_unit', 'months')
+                    ->where('duration_value', '>=', $filters['duration_months']);
+            });
+        }
+
+        if (! empty($filters['minimum_pay_rate'])) {
+            $query->where('pay_rate_amount', '>=', $filters['minimum_pay_rate']);
+        }
+
+        if (! empty($filters['pay_unit'])) {
+            $query->where('pay_rate_type', $filters['pay_unit']);
+        }
+
+        $paginator = $query->paginate($limit, ['*'], 'page', $page); // custom page & per page.[web:296][web:470]
+
+        $jobsCollection = $paginator->getCollection();
+        $jobs = $jobsCollection->map(function (JobPost $job) {
+            $owner = $job->owner;
+
+            $companyRating = $owner
+                ? round($owner->receivedReviews()->avg('overall_rating') ?? 0, 1)
+                : 0.0; // average rating for the company.[web:433][web:436]
+
+            return [
+                'job_id' => $job->job_code,
+                'title' => $job->title,
+                'company' => [
+                    'name' => $job->company_name,
+                    'rating' => $companyRating,
+                ],
+                'distance_miles' => isset($job->distance_miles)
+                    ? (int) round((float) $job->distance_miles) // your sample uses integers
+                    : null,
+                'pay' => [
+                    'amount' => (float) $job->pay_rate_amount,
+                    'unit' => $job->pay_rate_type,
+                ],
+                'duration' => [
+                    'value' => (int) $job->duration_value,
+                    'unit' => $job->duration_unit,
+                ],
+                'start_date' => optional($job->start_date)->toDateString(),
+                'is_featured' => (bool) $job->is_featured,
+                'quick_apply' => true, // or drive from a column/flag if you add one
+            ];
+        })->values()->all(); // mapping via collection is idiomatic for API responses.[web:29][web:375]
+        $data = [
+            'location' => [
+                'name' => $location['name'] ?? null,
+                'latitude' => $lat,
+                'longitude' => $lng,
+                'search_radius_miles' => $radius,
+            ],
+            'jobs' => $jobs,
+            'pagination' => [
+                'page' => $paginator->currentPage(),
+                'limit' => $paginator->perPage(),
+                'total_pages' => $paginator->lastPage(),
+                'total_jobs' => $paginator->total(),
+            ],
+        ];
+
+        return ApiResponse::success('', ['data' => $data]);
+    }
 }

@@ -19,7 +19,8 @@ class User extends Authenticatable implements JWTSubject
         'user_type',
         'latitude',
         'longitude',
-        'available_today'
+        'available_today',
+        'profile_image',
     ];
 
     protected $hidden = [
@@ -68,4 +69,11 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(Apprentice::class);
     }
+
+    public function receivedReviews()
+    {
+        return $this->hasMany(Review::class, 'reviewee_id');
+    }
+
+
 }
