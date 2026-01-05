@@ -6,6 +6,8 @@ use App\Http\Controllers\V1\Auth\ContractorController;
 use App\Http\Controllers\V1\Auth\LaborerController;
 use App\Http\Controllers\V1\Auth\SubcontractorController;
 use App\Http\Controllers\V1\JobPostController;
+use App\Http\Controllers\V1\ListingController;
+use App\Http\Controllers\V1\ListingMetaController;
 use App\Http\Controllers\V1\ReviewController;
 use App\Http\Controllers\V1\SpecializationController;
 use Illuminate\Support\Facades\Route;
@@ -62,5 +64,21 @@ Route::middleware('auth:api')->group(function () {
     Route::controller(ReviewController::class)->group(function () {
         Route::post('/reviews_submit', 'submitReview');
         Route::get('/reviews', 'listReviews');
+    });
+
+    // Listing API
+    Route::controller(ListingController::class)->group(function () {
+        Route::post('/add_listings', 'createListing');
+        Route::post('/edit_listings', 'editListing');
+        Route::post('/delete_listing', 'deleteListing');
+        Route::get('/listings',         'index');
+        Route::get('/my_listings',      'myListings');
+        Route::get('/listing_details',  'show');
+    });
+
+    // Listing Meta
+    Route::controller(ListingMetaController::class)->group(function () {
+        Route::get('/category_list', 'categoryList');
+        Route::get('/condition_list', 'conditionList');
     });
 });
