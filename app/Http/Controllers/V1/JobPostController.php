@@ -44,6 +44,8 @@ class JobPostController extends Controller
             'location.lat' => 'required|numeric|between:-90,90',
             'location.lng' => 'required|numeric|between:-180,180',
             'location.city' => 'required|string|max:255',
+            'location.state' => 'required|string|max:255',
+            'location.country' => 'required|string|max:255',
             'job_description' => 'required|string',
             'is_featured' => 'required|boolean',
         ]); // Nested validation ensures all nested objects conform to the expected shape.[web:18][web:190]
@@ -81,6 +83,8 @@ class JobPostController extends Controller
             'location_lat' => $location['lat'],
             'location_lng' => $location['lng'],
             'city' => $location['city'],
+            'state' => $location['state'],
+            'country' => $location['country'],
             'job_description' => $validated['job_description'],
             'is_featured' => $validated['is_featured'],
             'status' => 'pending', // per new response spec
@@ -121,6 +125,8 @@ class JobPostController extends Controller
                 'company_name' => $job->company_name ?? 'ABC Construction',
                 'location' => [
                     'city' => $job->city,
+                    'state' => $job->state,
+                    'country' => $job->country,
                 ],
                 'is_featured' => (bool) $job->is_featured,
                 'pay_rate' => [
@@ -202,6 +208,8 @@ class JobPostController extends Controller
                 'location.lat' => 'required|numeric|between:-90,90',
                 'location.lng' => 'required|numeric|between:-180,180',
                 'location.city' => 'required|string|max:255',
+                'location.state' => 'required|string|max:255',
+                'location.country' => 'required|string|max:255',
 
                 'job_description' => 'required|string',
                 'is_featured' => 'required|boolean',
@@ -253,6 +261,8 @@ class JobPostController extends Controller
             'location_lat' => $location['lat'],
             'location_lng' => $location['lng'],
             'city' => $location['city'],
+            'state' => $location['state'],
+            'country' => $location['country'],
 
             'job_description' => $validated['job_description'],
             'is_featured' => $validated['is_featured'],

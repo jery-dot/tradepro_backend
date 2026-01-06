@@ -25,6 +25,8 @@ class JobPost extends Model
         'location_lat',
         'location_lng',
         'city',
+        'state',
+        'country',
         'job_description',
         'is_featured',
         'status',
