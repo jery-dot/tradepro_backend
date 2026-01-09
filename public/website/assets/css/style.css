@@ -26,7 +26,7 @@ body {
 
 /* Header / nav */
 .site-header {
-  /* position: ; */
+  /* position: fixed; */
   top: 0;
   z-index: 20;
   background-color: #ffffff;
@@ -88,74 +88,137 @@ body {
     text-align: center;
   }
 }
-/* Hero */
-.hero {
-  position: relative;
-  min-height: 100vh;
-  color: #ffffff;
-  overflow: hidden;
+/* ... keep your existing .container and .site-header code ... */
+
+.site-header {
+  position: sticky; /* Fixed the commented out position */
+  top: 0;
+  z-index: 20;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
 }
 
-/* Video covers full section */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: auto;        /* Changed from fixed height to allow wrapping */
+  min-height: 88px;    /* Keeps the design height on desktop */
+  padding: 1rem 1.5rem; /* Adds vertical breathing room */
+}
+
+.nav-links {
+  display: flex;
+  flex-wrap: wrap;     /* Essential: allows links to drop to next line */
+  gap: 1.5rem 2.5rem;  /* Added vertical gap for when links wrap */
+  justify-content: flex-end;
+}
+
+/* Tablet / Small Laptop adjustment */
+@media (max-width: 768px) {
+  .nav-links {
+    gap: 1rem 1.5rem; /* Reduce gap on tablets */
+  }
+}
+
+/* Mobile: Stack the logo and links */
+@media (max-width: 580px) {
+  .nav {
+    flex-direction: column; /* Stack logo on top of links */
+    gap: 1rem;
+    text-align: center;
+    padding: 1.5rem;
+  }
+
+  .nav-links {
+    justify-content: center; /* Center links when stacked */
+    gap: 0.75rem 1.25rem;
+  }
+  
+  .logo-img {
+    height: 48px; /* Slightly smaller logo for mobile */
+  }
+}
+/* =================================
+  End of header */
+/*===============================
+*   Hero Section
+*===============================*/
+/* --- Hero Section Fixes --- */
+/* --- Hero Section Fixes --- */
+
+.hero {
+  position: relative;
+  min-height: 100vh; /* Keeps video full screen */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  overflow: hidden;
+  background-color: #000; /* Fallback if video fails */
+}
 
 .hero-video {
   position: absolute;
-  inset: 0;
+  top: 50%;
+  left: 50%;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* Ensures video fills area without stretching */
+  transform: translate(-50%, -50%);
+  z-index: 0;
 }
-
-/* Dark overlay */
 
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7); /* from Figma */
+  background: rgba(0, 0, 0, 0.65); /* Adjusted for better text contrast */
+  z-index: 1;
 }
-
-/* Content centering */
 
 .hero-inner {
   position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  z-index: 2; /* Sits on top of overlay and video */
+  width: 100%;
+  padding: 80px 0; /* Prevents text hitting top/bottom on mobile */
 }
 
 .hero-content {
   text-align: center;
-  max-width:  90rem;
+  max-width: 1302px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .hero h1 {
   font-family: "Road Rage", "Roboto", system-ui, sans-serif;
-  font-weight: 400;
-  font-size: 68px;
+  /* Scales font between 38px and 68px based on screen size */
+  font-size: clamp(2.375rem, 8vw, 4.25rem); 
   line-height: 1.1;
-  margin: 0;
+  margin: 0 auto;
+  max-width: 1502px; /* Keeps heading from getting too wide */
 }
 
 .hero p {
-  margin: 0;
+  margin: 0 auto;
+  max-width: 807px;
   font-family: "Roboto", system-ui, sans-serif;
-  font-size: 26px;
-  /* margin-bottom: 40px; */
+  /* Scales font between 18px and 26px */
+  font-size: clamp(1.125rem, 4vw, 1.625rem);
+  line-height: 1.5;
 }
 
 .hero-caption {
   font-family: "Inter", system-ui, sans-serif;
-  font-size: 20px !important; 
-  opacity: 0.9;
-  margin-top: 100px !important;
+  font-size: 1rem !important;
+  opacity: 0.8;
+  /* Reduced from 100px to be responsive */
+  margin-top: clamp(1.5rem, 5vh, 4rem) !important;
 }
 
-/* Store buttons (image badges) */
+/* --- Store Buttons --- */
 
 .store-buttons {
   display: flex;
@@ -228,40 +291,26 @@ body {
   line-height: 1.1;
 }
 
-/* Mobile tweak */
 
-@media (max-width: 480px) {
-  .store-btn--primary {
-    min-width: 220px;
-    padding: 0.6rem 1.25rem;
-  }
+/* --- Responsive Media Queries --- */
 
-  .store-icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .store-label-big {
-    font-size: 1.4rem;
-  }
-}
-
-/* Responsive tweaks */
-
-@media (max-width: 768px) {
+@media (max-width: 580px) {
   .hero-inner {
+    padding: 40px 1.5rem; /* More side padding for mobile */
+  }
+
+  .store-buttons {
+    flex-direction: column; /* Stack buttons vertically on small phones */
     align-items: center;
   }
 
-  .hero-content {
-    padding: 4rem 0;
-    gap: 1rem;
-  }
-
-  .store-btn--large img {
-    height: 56px;
+  .store-btn--primary {
+    width: 100%;
+    max-width: 280px;
   }
 }
+/*==============================
+* End of Hero Section */
 
 /* About section */
 
