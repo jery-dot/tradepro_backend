@@ -45,102 +45,220 @@
         </div>
       </section>
 
-      <section class="contact-form-section">
+      <section class="contact-section">
         <div class="container">
-          <div class="section-header">
-            <h2>Let’s Talk</h2>
-            <p>
-              Have a question or any Special Request? Fill out the Form Below
-            </p>
+          <div class="contact-intro">
+            <div class="intro-image">
+              <img
+                src="assets/images/worker-illustration.png"
+                alt="Worker Illustration"
+              />
+            </div>
+            <div class="intro-text">
+              <h2 class="brand-blue">Heading</h2>
+              <p>
+                We’re always happy to connect with you. Have a question,
+                concern, or feedback to share? Our team is here to support you
+                at every step. Whether it’s about jobs, applications, or
+                payments, we’re ready to help and guide you. Have a question,
+                concern, or feedback to share? Our team is here to support.
+              </p>
+            </div>
           </div>
 
-          <div class="contact-card">
-            <h3>Contact Form</h3>
-            <form action="#">
+          <div class="contact-form-card">
+            <div class="card-title">
+              <h2 class="brand-blue">Let's Talk</h2>
+              <p>
+                Have a question or any Special Request? Fill out the Form Below
+              </p>
+            </div>
+
+            <form action="#" class="main-contact-form">
               <div class="form-grid">
-                <div class="form-group">
-                  <label for="full-name">Full Name</label>
+                <div class="form-field">
+                  <label>Full Name</label>
                   <input
                     type="text"
-                    id="full-name"
                     placeholder="Enter your Full name"
                     required
                   />
                 </div>
-                <div class="form-group">
-                  <label for="email">Email Address</label>
+                <div class="form-field">
+                  <label>Email Address</label>
                   <input
                     type="email"
-                    id="email"
                     placeholder="Enter your Email address"
                     required
                   />
                 </div>
-                <div class="form-group">
-                  <label for="phone">Phone Number (Optional)</label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    placeholder="Include Country Code"
-                  />
+                <div class="form-field">
+                  <label>Phone Number (Optional)</label>
+                  <input type="tel" placeholder="Include Country Code" />
                 </div>
-                <div class="form-group">
-                  <label for="subject">Subject</label>
+                <div class="form-field">
+                  <label>Subject</label>
                   <input
                     type="text"
-                    id="subject"
                     placeholder="Labor, paying, contractor etc....."
                   />
                 </div>
               </div>
 
-              <div class="form-group full-width">
-                <label for="message">Message</label>
+              <div class="form-field full-width">
+                <label>Message</label>
                 <textarea
-                  id="message"
                   rows="5"
                   placeholder="How can we assist you?"
                 ></textarea>
               </div>
 
-              <div class="form-options">
-                <div class="option-group">
-                  <span class="option-label">Preferred Contact Method</span>
-                  <div class="checkbox-row">
-                    <label class="custom-checkbox"
-                      ><input type="checkbox" name="method" value="email" />
-                      <span>Email</span></label
-                    >
-                    <label class="custom-checkbox"
-                      ><input type="checkbox" name="method" value="phone" />
-                      <span>Phone</span></label
-                    >
-                    <label class="custom-checkbox"
-                      ><input type="checkbox" name="method" value="whatsapp" />
-                      <span>WhatsApp</span></label
-                    >
-                  </div>
-                </div>
-
-                <div class="privacy-agreement">
-                  <label class="custom-checkbox">
-                    <input type="checkbox" required />
-                    <span
-                      >I agree to the processing of my personal data accordance
-                      with the Privacy Policy</span
-                    >
+              <div class="selection-row">
+                <span class="selection-label">Preferred Contact Method</span>
+                <div class="options-group">
+                  <label class="custom-option">
+                    <input type="radio" name="method" value="email" />
+                    <span class="custom-box blue-box"></span> Email
+                  </label>
+                  <label class="custom-option">
+                    <input type="radio" name="method" value="phone" />
+                    <span class="custom-box"></span> Phone
+                  </label>
+                  <label class="custom-option">
+                    <input type="radio" name="method" value="whatsapp" />
+                    <span class="custom-box"></span> WhatsApp
                   </label>
                 </div>
               </div>
 
-              <div class="form-submit">
-                <button type="submit" class="btn-send">Send Message</button>
+              <div class="privacy-row">
+                <label class="custom-option">
+                  <input type="checkbox" required />
+                  <span class="custom-box check-box"></span>
+                  I agree to the processing of my personal data accordance with
+                  the Privacy Policy
+                </label>
               </div>
+
+              <button type="submit" class="submit-btn">Send Message</button>
             </form>
           </div>
         </div>
       </section>
+
+      <section class="contact-social">
+        <div class="container social-wrapper">
+          <div class="social-illustration">
+            <img
+              src="assets/images/construction-team.png"
+              alt="TradePro Construction Team"
+            />
+          </div>
+
+          <div class="social-handles-card">
+            <div class="social-grid">
+              <div class="social-item">
+                <img src="assets/images/x.png" alt="X" class="social-png" />
+                <span>@tradepro123</span>
+              </div>
+              <div class="social-item">
+                <img
+                  src="assets/images/whatsapp.png"
+                  alt="WhatsApp"
+                  class="social-png"
+                />
+                <span>@tradepro123</span>
+              </div>
+              <div class="social-item">
+                <img
+                  src="assets/images/facebook.png"
+                  alt="Facebook"
+                  class="social-png"
+                />
+                <span>@tradepro123</span>
+              </div>
+              <div class="social-item">
+                <img
+                  src="assets/images/instagram.png"
+                  alt="Instagram"
+                  class="social-png"
+                />
+                <span>@tradepro123</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
+
+    <footer class="main-footer">
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <img
+            src="assets/images/tradepro-logo.png"
+            alt="TradePro Logo"
+            class="footer-logo"
+          />
+          <p class="footer-desc">
+            TradePro is a US-based trade services and workforce marketplace
+            connecting skilled labor, apprentices, and trade professionals. From
+            trade jobs and messaging to reviews and local equipment sales,
+            TradePro supports the entire trade ecosystem.
+          </p>
+          <div class="social-links">
+            <a href="#"
+              ><img src="assets/images/facebook.png" alt="Facebook"
+            /></a>
+            <a href="#"
+              ><img src="assets/images/youtube.png" alt="YouTube"
+            /></a>
+            <a href="#"
+              ><img src="assets/images/instagram.png" alt="Instagram"
+            /></a>
+          </div>
+        </div>
+
+        <div class="footer-links">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#privacy">Privacy Policy</a></li>
+            <li><a href="#terms">Terms & Condition</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-app">
+          <div class="app-text-phone">
+            <h3>Application is Available On</h3>
+            <img
+              src="assets/images/footer-phone.png"
+              alt="TradePro App on Phone"
+              class="footer-phone-mockup"
+            />
+          </div>
+          <div class="app-badges">
+            <a href="#"
+              ><img
+                src="assets/images/google-play-badge.png"
+                alt="Get it on Google Play"
+            /></a>
+            <a href="#"
+              ><img
+                src="assets/images/app-store-badge.png"
+                alt="Download on the App Store"
+            /></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div class="container">
+          <p>&copy; 2026 Tradepro. All Rights Reserved</p>
+          <p style="margin-top: 10px;"><strong>TradePro is a DBA of Summit Innovation Group, LLC.</strong></p>
+        </div>
+      </div>
+    </footer>
 
     <script src="script.js"></script>
   </body>

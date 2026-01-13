@@ -19,125 +19,89 @@ body {
 
 .container {
   width: 100%;
-  max-width: 1200px; /* similar to 1440px artboard but with side padding */
+  max-width: 1200px;
+  /* similar to 1440px artboard but with side padding */
   margin: 0 auto;
   padding: 0 1.5rem;
 }
 
 /* Header / nav */
+
+/* --- Header / Nav Bar --- */
 .site-header {
-  /* position: fixed; */
-  top: 0;
-  z-index: 20;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e5e5e5;
+    width: 100%;
+    height: 108px;           /* Figma Height */
+    background: #F5F5F5;     /* Figma Background */
+    box-shadow: 1px 1px 5.2px rgba(0, 0, 0, 0.25); /* Figma Shadow */
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
-.nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 88px; /* close to your Figma header height */
-}
-
-/* Logo */
-
-.logo {
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 .logo-img {
-  height: 64px;          /* tune to match design */
-  width: auto;
+    height: 64px; /* Scaled to fit 108px header comfortably */
+    width: auto;
+    display: block;
 }
 
-/* Nav links */
-
+/* --- Navigation Links --- */
 .nav-links {
-  display: flex;
-  gap: 2.5rem;            /* spacing between links */
+    display: flex;
+    gap: 25px; /* Figma Gap */
 }
 
 .nav-link {
-  font-family: "Roboto", system-ui, sans-serif;
-  font-size: 1.0625rem;   /* ~17px–18px */
-  color: #0d3b66;
-  text-decoration: none;
-  padding-bottom: 2px;
+    text-decoration: none;
+    font-family: 'Roboto', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 18px;      /* Figma Font Size */
+    line-height: 21px;    /* Figma Line Height */
+    color: #0D3B66;       /* Figma Text Color */
+    position: relative;   /* For the custom underline */
+    padding: 4px 0;
+    transition: color 0.2s ease;
 }
 
-.nav-link:hover {
-  text-decoration: underline;
-}
-
+/* Active State: The Underline */
 .nav-link.is-active {
-  font-weight: 500;
+    font-weight: 500; /* Makes active link slightly more prominent */
 }
 
-/* Very small screens: center everything */
-
-@media (max-width: 480px) {
-  .nav {
-    align-items: center;
-  }
-
-  .nav-links {
-    justify-content: center;
-    text-align: center;
-  }
-}
-/* ... keep your existing .container and .site-header code ... */
-
-.site-header {
-  position: sticky; /* Fixed the commented out position */
-  top: 0;
-  z-index: 20;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e5e5e5;
+.nav-link.is-active::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #0D3B66;
 }
 
-.nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: auto;        /* Changed from fixed height to allow wrapping */
-  min-height: 88px;    /* Keeps the design height on desktop */
-  padding: 1rem 1.5rem; /* Adds vertical breathing room */
-}
-
-.nav-links {
-  display: flex;
-  flex-wrap: wrap;     /* Essential: allows links to drop to next line */
-  gap: 1.5rem 2.5rem;  /* Added vertical gap for when links wrap */
-  justify-content: flex-end;
-}
-
-/* Tablet / Small Laptop adjustment */
+/* Mobile Responsive */
 @media (max-width: 768px) {
-  .nav-links {
-    gap: 1rem 1.5rem; /* Reduce gap on tablets */
-  }
-}
-
-/* Mobile: Stack the logo and links */
-@media (max-width: 580px) {
-  .nav {
-    flex-direction: column; /* Stack logo on top of links */
-    gap: 1rem;
-    text-align: center;
-    padding: 1.5rem;
-  }
-
-  .nav-links {
-    justify-content: center; /* Center links when stacked */
-    gap: 0.75rem 1.25rem;
-  }
-  
-  .logo-img {
-    height: 48px; /* Slightly smaller logo for mobile */
-  }
+    .site-header {
+        height: auto;
+        padding: 15px 0;
+    }
+    .nav-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .nav-links {
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 }
 /* =================================
   End of header */
@@ -149,13 +113,15 @@ body {
 
 .hero {
   position: relative;
-  min-height: 100vh; /* Keeps video full screen */
+  min-height: 100vh;
+  /* Keeps video full screen */
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
   overflow: hidden;
-  background-color: #000; /* Fallback if video fails */
+  background-color: #000;
+  /* Fallback if video fails */
 }
 
 .hero-video {
@@ -164,7 +130,8 @@ body {
   left: 50%;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Ensures video fills area without stretching */
+  object-fit: cover;
+  /* Ensures video fills area without stretching */
   transform: translate(-50%, -50%);
   z-index: 0;
 }
@@ -172,15 +139,18 @@ body {
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65); /* Adjusted for better text contrast */
+  background: rgba(0, 0, 0, 0.65);
+  /* Adjusted for better text contrast */
   z-index: 1;
 }
 
 .hero-inner {
   position: relative;
-  z-index: 2; /* Sits on top of overlay and video */
+  z-index: 2;
+  /* Sits on top of overlay and video */
   width: 100%;
-  padding: 80px 0; /* Prevents text hitting top/bottom on mobile */
+  padding: 80px 0;
+  /* Prevents text hitting top/bottom on mobile */
 }
 
 .hero-content {
@@ -195,10 +165,11 @@ body {
 .hero h1 {
   font-family: "Road Rage", "Roboto", system-ui, sans-serif;
   /* Scales font between 38px and 68px based on screen size */
-  font-size: clamp(2.375rem, 8vw, 4.25rem); 
+  font-size: clamp(2.375rem, 8vw, 4.25rem);
   line-height: 1.1;
   margin: 0 auto;
-  max-width: 1502px; /* Keeps heading from getting too wide */
+  max-width: 1502px;
+  /* Keeps heading from getting too wide */
 }
 
 .hero p {
@@ -268,7 +239,8 @@ body {
 }
 
 .store-icon {
-  width: 57px;   /* from Figma */
+  width: 57px;
+  /* from Figma */
   height: 57px;
   flex-shrink: 0;
 }
@@ -296,11 +268,13 @@ body {
 
 @media (max-width: 580px) {
   .hero-inner {
-    padding: 40px 1.5rem; /* More side padding for mobile */
+    padding: 40px 1.5rem;
+    /* More side padding for mobile */
   }
 
   .store-buttons {
-    flex-direction: column; /* Stack buttons vertically on small phones */
+    flex-direction: column;
+    /* Stack buttons vertically on small phones */
     align-items: center;
   }
 
@@ -309,6 +283,7 @@ body {
     max-width: 280px;
   }
 }
+
 /*==============================
 * End of Hero Section */
 
@@ -328,14 +303,16 @@ body {
 
 /* About text block – replacement for Figma's width/height/left/top */
 .about-text {
-  max-width: 500px;            /* ~498px from Figma */
+  max-width: 500px;
+  /* ~498px from Figma */
 }
 
 .about-text h2 {
   margin: 0 0 1.5rem;
   font-family: "Roboto", system-ui, sans-serif;
   font-weight: 500;
-  font-size: 3.2rem; /* close to 52px */
+  font-size: 3.2rem;
+  /* close to 52px */
   line-height: 1.1;
   letter-spacing: 2px;
   color: #0d3b66;
@@ -357,9 +334,9 @@ body {
   padding: 0.9rem 2.8rem 0.9rem 2.2rem;
   left: -110px;
 }
- 
 
- 
+
+
 
 /* Right-side stacked images */
 
@@ -411,8 +388,10 @@ body {
 .about-img-card {
   width: 100%;
   height: 100%;
-  padding: 10px;                  /* “border” thickness */
-  background-color: #f5f5f5;      /* same as about section bg */
+  padding: 10px;
+  /* “border” thickness */
+  background-color: #f5f5f5;
+  /* same as about section bg */
   border-radius: 22px;
   box-sizing: border-box;
   box-shadow: none !important;
@@ -425,8 +404,10 @@ body {
   object-fit: cover;
   border-radius: inherit;
   display: block;
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);  /* shadow on image */
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+  /* shadow on image */
 }
+
 .about-img--bottom .about-img-card img {
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
 }
@@ -476,19 +457,22 @@ body {
   .about-visual {
     max-width: 500px;
     margin: 0 auto;
-    display: block; /* Ensures the element respects the auto margin */
-  width: 100%;
-  position: relative;
-  right: 0;
-  }
-  .about-visual svg{ 
+    display: block;
+    /* Ensures the element respects the auto margin */
     width: 100%;
-   }
+    position: relative;
+    right: 0;
+  }
+
+  .about-visual svg {
+    width: 100%;
+  }
 
   .about-badge {
     transform: translate(10%, 20%);
   }
-  .btn-primary{
+
+  .btn-primary {
     margin: 0;
     width: 100%;
     position: absolute;
@@ -518,14 +502,15 @@ body {
 .trade-search-section {
   position: relative;
   padding: 100px 0;
-  background-color: #f5f5f5; /* Top/Left base color */
-  
+  background-color: #f5f5f5;
+  /* Top/Left base color */
+
   /* The Polygon Background Image */
   /* This SVG creates a shape from the bottom-left to the top-right */
   background-image: url("../images/jobs-bg.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  
+
   display: flex;
   align-items: center;
   min-height: 600px;
@@ -534,14 +519,16 @@ body {
 .trade-search-flex {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end; /* Aligns content toward the bottom blue area */
+  align-items: flex-end;
+  /* Aligns content toward the bottom blue area */
   width: 100%;
   gap: 50px;
 }
 
 .trade-search-title {
   flex: 1;
-  padding-bottom: 40px; /* Keeps text in the white/clear area */
+  padding-bottom: 40px;
+  /* Keeps text in the white/clear area */
 }
 
 .trade-search-title h1 {
@@ -551,8 +538,8 @@ body {
   line-height: 1.1;
   font-weight: 800;
   margin: 0;
-    margin-top: -20rem !important;
-    position: absolute;
+  margin-top: -20rem !important;
+  position: absolute;
 }
 
 .trade-search-grid {
@@ -561,7 +548,8 @@ body {
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
-  padding-bottom: -80px; /* Positions pills inside the blue polygon area */
+  padding-bottom: -80px;
+  /* Positions pills inside the blue polygon area */
 }
 
 .pill {
@@ -602,7 +590,7 @@ body {
     margin-top: 0 !important;
     color: #ffffff;
     position: relative;
-    
+
   }
 
   .trade-search-grid {
@@ -610,11 +598,13 @@ body {
     padding-bottom: 20px;
   }
 }
+
 /*==============================
 * End of Trade Section*/
 /**================================================
   * Jobs section with slanted background
-  ================================================**/ */
+  ================================================**/
+*/
 
 /* Section wrapper with slanted background */
 .jobs {
@@ -634,9 +624,12 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("../images/jobs-bg.png"); /* your image path */
-  background-size: cover;      /* fill area responsively */
-  background-position: center; /* keep focal point centered */
+  background-image: url("../images/jobs-bg.png");
+  /* your image path */
+  background-size: cover;
+  /* fill area responsively */
+  background-position: center;
+  /* keep focal point centered */
   background-repeat: no-repeat;
 }
 
@@ -677,21 +670,24 @@ body {
   grid-row: 2 / 3;
   display: flex;
   flex-direction: column;
-  align-items: center; 
+  align-items: center;
   align-self: center;
   justify-self: center;
   /* align-items: start;   */
   flex-wrap: wrap;
-  gap: .5rem .5rem  ;
-  padding: 0px 0px 70px 0;  /* from Figma */
+  gap: .5rem .5rem;
+  padding: 0px 0px 70px 0;
+  /* from Figma */
   left: -10% !important;
 }
 
 .jobs-tags-row {
   display: flex;
-  justify-content: center;   /* chips grouped in the middle of row */
+  justify-content: center;
+  /* chips grouped in the middle of row */
   gap: 1rem;
 }
+
 /* pills */
 .job-chip {
   box-sizing: border-box;
@@ -699,13 +695,16 @@ body {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 6px 50px;          /* from Figma */
+  padding: 6px 50px;
+  /* from Figma */
   gap: 10px;
 
   /* responsive size instead of fixed width/height */
   min-height: 50px;
-  border: 2px solid #f5f5f5;  /* from Figma */
-  border-radius: 45px;        /* from Figma */
+  border: 2px solid #f5f5f5;
+  /* from Figma */
+  border-radius: 45px;
+  /* from Figma */
   background: transparent;
   color: #ffffff;
   font-family: "Inter", system-ui, sans-serif;
@@ -740,11 +739,11 @@ body {
 }
 
 @media (max-width: 600px) {
-   .job-chip {
+  .job-chip {
     padding: 6px 32px;
     min-height: 52px;
     font-size: 0.95rem;
-  } 
+  }
 }
 
 
@@ -756,7 +755,8 @@ Features section
 /* Features Section */
 .features {
   padding: 80px 0;
-  background-color: #f5f5f5; /* Matches your body bg */
+  background-color: #f5f5f5;
+  /* Matches your body bg */
   overflow: hidden;
 }
 
@@ -795,8 +795,13 @@ Features section
   position: relative;
 }
 
-.text-right { text-align: right; }
-.text-left { text-align: left; }
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
 
 .font-handwritten {
   font-family: 'Shadows Into Light', cursive;
@@ -813,7 +818,9 @@ Features section
   max-width: 450px;
 }
 
-.text-right p { margin-left: auto; }
+.text-right p {
+  margin-left: auto;
+}
 
 /* Visual Boxes */
 .feature-visual {
@@ -837,7 +844,8 @@ Features section
 .feature-phone {
   width: 100%;
   height: 100%;
-  object-fit: cover;       /* key: make image cover the card */
+  object-fit: cover;
+  /* key: make image cover the card */
   display: block;
   border-radius: 20px;
 
@@ -885,17 +893,19 @@ Features section
 
 /* Mobile Responsive */
 @media (max-width: 992px) {
-  .feature-row, .feature-row.row-reverse {
+
+  .feature-row,
+  .feature-row.row-reverse {
     flex-direction: column;
     gap: 40px;
     text-align: center;
     margin-bottom: 80px;
   }
-  
+
   .feature-text p {
     margin: 0 auto;
   }
-  
+
   .connector {
     display: none;
   }
@@ -1001,8 +1011,13 @@ Features section
   width: 150px;
 }
 
-.line-connector.right { right: -160px; }
-.line-connector.left { left: -160px; }
+.line-connector.right {
+  right: -160px;
+}
+
+.line-connector.left {
+  left: -160px;
+}
 
 .line-connector::after {
   content: "";
@@ -1014,82 +1029,140 @@ Features section
   border-radius: 50%;
 }
 
-.line-connector.right::after { right: 0; }
-.line-connector.left::after { left: 0; }
-
-/* --- Who For Section --- */
-.who-for {
-  padding: 6rem 0;
-  background-color: #F5F5F5;
+.line-connector.right::after {
+  right: 0;
 }
 
+.line-connector.left::after {
+  left: 0;
+}
+/* SECTION */
+.who-for {
+  padding: 6rem 1rem;
+  background: #f5f5f5;
+}
+
+/* GRID */
 .who-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
+/* CARD */
 .who-card {
-  position: relative; /* Ensures absolute children are positioned relative to this card */
-  height: 450px;
-  border-radius: 20px;
-  overflow: hidden;
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  align-items: center; /* Centers text vertically */
-  justify-content: center; /* Centers text horizontally */
-  text-align: center;
-  padding: 2rem;
+  position: relative;
+  height: 520px;
+  perspective: 1500px;
+  cursor: pointer;
 }
 
-.who-overlay {
+/* FLIP CONTAINER */
+.who-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.7s ease;
+}
+
+.who-card.is-flipped .who-card-inner {
+  transform: rotateY(180deg);
+}
+
+/* FACES */
+.who-card-front,
+.who-card-back {
   position: absolute;
   inset: 0;
-  background-color: rgba(13, 59, 102, 0.75);
+  border-radius: 20px;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 3rem;
+}
+
+/* FRONT */
+.who-card-front {
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  overflow: hidden;
+}
+
+.who-card-front .who-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 59, 102, 0.7);
+  z-index: 0;
+}
+
+.who-card-front h3 {
+  position: relative;
   z-index: 1;
 }
 
-.who-content {
-  position: relative;
-  z-index: 2;
-  color: #ffffff;
+/* BACK */
+.who-card-back {
+  background: #0d3b66;
+  color: #fff;
+  transform: rotateY(180deg);
 }
 
-.who-icon {
-  position: absolute; /* Takes it out of normal flow */
-  top: 25px;          /* Spacing from top edge */
-  right: 25px;        /* Spacing from right edge */
-  width: 30px;        /* Adjusted size for corner placement */
-  height: auto;
-  z-index: 3;         /* Ensures it sits on top of overlay and content */
+/* ICON */
+.who-stationary-icon {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  width: 32px;
+  z-index: 10;
+  pointer-events: none;
+  filter: brightness(0) invert(1);
 }
 
-.who-card h3 {
-  font-size: 2.5rem; /* Increased slightly for better presence without the icon above it */
+/* TEXT */
+.handwritten {
+  font-family: 'Shadows Into Light', cursive;
+  font-size: 2.2rem;
   line-height: 1.2;
-  margin: 0;
 }
 
-/* --- Responsive --- */
-@media (max-width: 992px) {
+.who-card-back p {
+  font-family: Inter, sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .who-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .who-card {
+    height: 480px !important;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
   .who-grid {
     grid-template-columns: 1fr;
   }
-  
-  .feature-item, .feature-item.reverse {
-    flex-direction: column;
-    text-align: center;
-    gap: 3rem;
+  .who-card {
+    max-width: 380px;
+    margin: 0 auto;
+    height: 460px;
   }
-
-  .line-connector {
-    display: none;
+  .handwritten {
+    font-size: 1.8rem;
   }
 }
-/*==================================
-  * End of Features Section
-===================================*/
 
 /*=============================
   * Opposite Feature Rows
@@ -1098,20 +1171,23 @@ Features section
 .opportunity-section {
   padding: 1rem 0;
   background-color: #F5F5F5;
-  overflow: hidden; /* Prevents horizontal scrollbar on the whole page */
+  overflow: hidden;
+  /* Prevents horizontal scrollbar on the whole page */
 }
+
 .spheric-divider {
   position: relative;
   width: 100%;
   height: 116px;
-  background-color: #F5F5F5; /* Matches your brand blue */
+  background-color: #F5F5F5;
+  /* Matches your brand blue */
   margin-top: 4rem;
-  
+
   /* This creates the "spheric" arch effect */
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  
+
   /* Ensures the curve looks smooth across all screen sizes */
-  transform: scaleX(1.5); 
+  transform: scaleX(1.5);
 }
 
 /* Optional: If you want content inside the curve (like a logo or CTA) */
@@ -1123,17 +1199,20 @@ Features section
 /* Mobile Adjustment */
 @media (max-width: 768px) {
   .spheric-divider {
-    height: 120px; /* Scale down the height slightly for mobile screens */
+    height: 120px;
+    /* Scale down the height slightly for mobile screens */
     transform: scaleX(1.2);
   }
 }
+
 .opportunity-section .section-header {
   margin-bottom: 3rem;
 }
 
 .slider-container {
   width: 100%;
-  padding: 0 0; /* Adds a little peek at the next/previous slides */
+  padding: 0 0;
+  /* Adds a little peek at the next/previous slides */
   margin-bottom: -8%;
 }
 
@@ -1141,8 +1220,10 @@ Features section
   display: flex;
   gap: 20px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory; /* The "slider" magic */
-  scrollbar-width: none; /* Hides scrollbar in Firefox */
+  scroll-snap-type: x mandatory;
+  /* The "slider" magic */
+  scrollbar-width: none;
+  /* Hides scrollbar in Firefox */
   padding-bottom: 20px;
 }
 
@@ -1152,7 +1233,8 @@ Features section
 }
 
 .slide {
-  flex: 0 0 350px; /* Each slide is 350px wide */
+  flex: 0 0 350px;
+  /* Each slide is 350px wide */
   scroll-snap-align: center;
   /* border-radius: 12px; */
   overflow: hidden;
@@ -1163,7 +1245,8 @@ Features section
 .slide img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Ensures image fills the frame without stretching */
+  object-fit: cover;
+  /* Ensures image fills the frame without stretching */
   display: block;
 }
 
@@ -1175,21 +1258,24 @@ Features section
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .slide {
-    flex: 0 0 85%; /* Shows most of one slide and a bit of the next on mobile */
+    flex: 0 0 85%;
+    /* Shows most of one slide and a bit of the next on mobile */
     height: 400px;
   }
 }
+
 /*=============================
   * End of Opposite Feature Rows*/
 
-  /**========================
+/**========================
   Financial section
   ========================**/
-  /* --- Final CTA Section --- */
+/* --- Final CTA Section --- */
 .cta-section {
   width: 100%;
   overflow: hidden;
-  background-color: #e6eef4; /* Pale blue/gray background from image */
+  background-color: #e6eef4;
+  /* Pale blue/gray background from image */
 }
 
 .cta-grid {
@@ -1203,7 +1289,8 @@ Features section
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* Aligns content to the center-left of the total screen */
+  justify-content: flex-end;
+  /* Aligns content to the center-left of the total screen */
   padding: 4rem 5% 4rem 10%;
 }
 
@@ -1214,7 +1301,8 @@ Features section
 .cta-text-wrapper h2 {
   font-family: "Roboto", sans-serif;
   font-size: 3rem;
-  color: #0d3b66; /* Brand Blue */
+  color: #0d3b66;
+  /* Brand Blue */
   margin-bottom: 2rem;
   line-height: 1.1;
 }
@@ -1253,7 +1341,8 @@ Features section
 .cta-image-side img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Ensures the handshake image fills the side perfectly */
+  object-fit: cover;
+  /* Ensures the handshake image fills the side perfectly */
   display: block;
 }
 
@@ -1262,49 +1351,57 @@ Features section
   .cta-grid {
     flex-direction: column;
   }
-  
+
   .cta-content-side {
     padding: 4rem 2rem;
     justify-content: center;
     text-align: center;
   }
-  
+
   .cta-image-side {
     height: 350px;
   }
-  
+
   .cta-text-wrapper h2 {
     font-size: 2.5rem;
   }
 }
+
 /*=============================
   * End of Financial Section*/
 
-  /*=============================
+/*=============================
   *  Footer Section
   =============================*/
-  /* --- Footer Styles --- */
+/* --- Footer Styles --- */
 .main-footer {
   background-color: #F5F5F5;
   padding-top: 5rem;
-  border-top: 1px solid #eee; /* Subtle separator */
+  border-top: 1px solid #eee;
+  /* Subtle separator */
+  box-shadow: 1px 1px 5.2px rgba(0, 0, 0, 0.25);
 }
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 2fr; /* Matches your design layout */
+  grid-template-columns: 1.5fr 1fr 2fr;
+  /* Matches your design layout */
   gap: 6rem;
   padding-bottom: 2rem;
-  
+
   /* Centering Logic */
-  max-width: 1200px;      /* Adjust this to match your site's content width */
-  margin: 0 auto;         /* Perfectly centers the grid horizontally */
-  padding-left: 0px;     /* Adds a safety gutter for mobile */
+  max-width: 1200px;
+  /* Adjust this to match your site's content width */
+  margin: 0 auto;
+  /* Perfectly centers the grid horizontally */
+  padding-left: 0px;
+  /* Adds a safety gutter for mobile */
   padding-right: 0px;
-  
+
   /* Optional: Vertically aligns columns if they have different heights */
-  align-items: start; 
+  align-items: start;
 }
+
 .footer-logo {
   height: 106px;
   width: 145px;
@@ -1334,10 +1431,11 @@ Features section
 }
 
 /* Links Column */
-.footer-links{
-margin-top: 3rem !important;
+.footer-links {
+  margin-top: 3rem !important;
 }
-.footer-links h3, 
+
+.footer-links h3,
 .footer-app h3 {
   font-family: "Roboto", sans-serif;
   color: #0d3b66;
@@ -1381,7 +1479,8 @@ margin-top: 3rem !important;
 
 .footer-phone-mockup {
   width: 140px;
-  margin-top: 10px; /* Pulls the phone up slightly like the design */
+  margin-top: 10px;
+  /* Pulls the phone up slightly like the design */
   /* margin-left: -600px !important;   */
 }
 
@@ -1400,17 +1499,20 @@ margin-top: 3rem !important;
 
 /* Copyright Bar */
 .footer-bottom {
-  background-color: #0d3b66; /* Your brand blue */
+  background-color: #0d3b66;
+  /* Your brand blue */
   color: #ffffff;
   text-align: center;
   padding: 1.5rem 0;
 }
 
 .footer-bottom p {
+  font-family: "inter", sans-serif;
   margin: 0;
   font-size: 1.1rem;
   letter-spacing: 0.5px;
 }
+
 
 /* Responsive */
 @media (max-width: 992px) {
@@ -1419,26 +1521,30 @@ margin-top: 3rem !important;
     text-align: center;
     gap: 10px;
   }
-  
-  .social-links, .app-badges {
+
+  .social-links,
+  .app-badges {
     justify-content: center;
   }
 
   .footer-phone-mockup {
     /* display: none; Hide phone on mobile to save space */
   }
-  .footer-desc{
-        margin: 0 15px;
+
+  .footer-desc {
+    margin: 0 15px;
   }
 }
+
 /* This targets tablets and mobile phones */
 @media (max-width: 992px) {
   .app-badges {
     /* Reset the margins used for desktop alignment */
-    margin-right: 0 !important; 
+    margin-right: 0 !important;
     margin-left: 0 !important;
-    margin-top: 2rem; /* Adds space between the text/phone and the buttons */
-    
+    margin-top: 2rem;
+    /* Adds space between the text/phone and the buttons */
+
     /* Ensure it spans the width of the column to allow centering */
     width: 100%;
     display: flex;
@@ -1446,7 +1552,7 @@ margin-top: 3rem !important;
     align-items: center;
     gap: 15px;
   }
-  
+
   /* Optional: Stack buttons vertically on very small screens (phones) */
   @media (max-width: 480px) {
     .app-badges {
@@ -1456,31 +1562,34 @@ margin-top: 3rem !important;
     }
   }
 }
+
 @media (max-width: 992px) {
   .app-text-phone {
-  display: flex;
+    display: flex;
     /* Change from horizontal to vertical */
     flex-direction: column;
-    
+
     /* Center the flex items (text and phone) */
-    align-items: center; 
-    
+    align-items: center;
+
     /* Center the text itself */
     text-align: center;
-    
+
     /* Give them some breathing room when stacked */
-    gap: 2rem; 
-    
+    gap: 2rem;
+
     /* Ensure the container takes full width to allow centering */
     width: 100%;
   }
 
   /* Reset the phone mockup margins for mobile */
   .footer-phone-mockup {
-    margin-top: 0; 
+    margin-top: 0;
     margin-right: 0;
-    width: 120px; /* Optional: scale the phone down slightly for mobile */
+    width: 120px;
+    /* Optional: scale the phone down slightly for mobile */
   }
 }
+
 /*=============================
   * End of Footer Section

@@ -92,325 +92,322 @@ body {
         justify-content: center;
     }
 }
-
-/* --- Contact Hero Section --- */
-.contact-hero {
-    margin-top: 4px;
-    background-color: #0D3B66; /* TradePro Navy Blue */
-    min-height: 80vh; /* Keeps video full screen */
-    padding: 80px 0;           /* Vertical spacing */
-    color: #ffffff;
-    text-align: center;
-    display: flex;
-    justify-content: center; /* horizontal */
-    align-items: center;     /* vertical */
-
-    /* Background Image Settings */
-    background-image: url('../images/contact-bg.png'); /* Replace with your image path */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-/* The Dark Tint Overlay */
-.hero-overlay {
-    top: 108px; /* To account for the fixed header height */
-    position: absolute;
-    inset: 0;
-    background: rgba(13, 59, 102, 0.75); /* TradePro Navy with 75% opacity */
-    z-index: 1;
-}   
-
-.contact-hero-content {
-  display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+/*=============================
+* Privacy Hero Section
+=============================*/
+.privacy-hero {
+  /* Matches the deep blue gradient in the image */
+  background: linear-gradient(180deg, #0d3b66 0%, #175a9e 50%, #0d3b66 100%);
+  padding: 8rem 0; /* Plenty of space above and below */
+  color: #ffffff;
+  text-align: center;
 }
 
-.contact-hero h1 {
-    font-family: 'Road Rage', sans-serif;
-    font-size: clamp(3rem, 10vw, 5rem); /* Responsive size */
-    font-weight: 400;
-    margin-bottom: 20px;
-    letter-spacing: 2px;
+.privacy-hero-content {
+  max-width: 800px; /* Constrains text for better readability */
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-.contact-hero p {
-    font-family: 'Roboto', sans-serif;
-    font-size: clamp(1.1rem, 3vw, 1.4rem);
-    line-height: 1.6;
-    opacity: 0.9;
-    font-weight: 300;
+.privacy-title {
+  /* To get the textured look, use a font like 'Bungee' or 'Roboto Black' */
+  font-family: "Road Rage", sans-serif;
+  font-weight: 900;
+  font-size: 4rem;
+  letter-spacing: 1px;
+  margin-bottom: 1.5rem;
+  text-transform: capitalize;
 }
 
-/* Responsive adjustment for smaller screens */
-@media (max-width: 768px) {
-    .contact-hero {
-        padding: 60px 0;
-    }
-}                                                   
-
-/* --- Contact Page Styles --- */
-/* --- Contact Page Redesign --- */
-.contact-section {
-  padding: 6rem 0;
-  background-color: #f8f9fa;
+.privacy-intro {
+  font-family: "Roboto", sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.6;
+  opacity: 0.9; /* Softens the white text slightly */
+  margin-bottom: 3rem;
+  max-width: 704px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* Intro Section */
-.contact-intro {
+/* Last Updated Row */
+.last-updated {
+  font-family: "Roboto", sans-serif;
   display: flex;
   align-items: center;
-  gap: 3rem;
-  max-width: 1000px;
+  justify-content: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.last-updated svg {
+  color: #ffffff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .privacy-hero {
+    padding: 5rem 0;
+  }
+  
+  .privacy-title {
+    font-size: 2.5rem;
+  }
+  
+  .privacy-intro {
+    font-size: 1rem;
+  }
+}
+/*=============================
+Terms Content Section*/
+/* --- Terms Page Styling --- */
+.terms-content {
+  padding: 4rem 0;
+  line-height: 1.6;
+  color: #444; /* Standard dark grey for long-form text */
+}
+
+.terms-section {
+  max-width: 900px;
   margin: 0 auto;
-  margin-bottom: -5px;  
 }
 
-.intro-image img {
-  max-width: 450px;
-  height: auto;
+.section-number {
+  color: #0d3b66; /* TradePro brand blue */
+  font-size: 1.8rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 0.5rem;
 }
 
-.brand-blue {
-  color: #0d3b66; /* Main brand blue */
-  font-size: 2.5rem;
+.terms-sub-section {
+  margin-bottom: 2.5rem;
+}
+
+.terms-sub-section h3 {
+  color: #333;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.terms-sub-section p {
+  margin-bottom: 1.2rem;
+  font-size: 1rem;
+  line-height: 40px;
+}
+
+/* Legal List Formatting */
+.legal-list {
+  padding-left: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
-.intro-text p {
-  line-height: 1.8;
-  color: #444;
-  font-size: 1.1rem;
+.legal-list li {
+  margin-bottom: 0.8rem;
+  padding-left: 0.5rem;
 }
 
-/* Form Card Container */
-.contact-form-card {
-  background: #F5F5F5;
-  border-radius: 25px;
-  padding: 4rem;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.06);
-  max-width: 1000px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2;
-  box-shadow: 0 4px 12px rgba(13, 59, 102, 0.15); 
-}
-
-.card-title {
-  text-align: center;
-  margin-bottom: 3.5rem;
-}
-
-.card-title p {
-  color: #666;
-  font-weight: 500;
-}
-
-/* Grid for Inputs */
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.form-field label {
-  font-weight: 600;
-  color: #333;
-}
-
-.form-field input, 
-.form-field textarea {
-  padding: 1.2rem;
-  background-color: #0D3B661A; /* Light grey inputs */
-  border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  box-shadow: 0 2px 6px #0D3B661A;
-}
-
-.full-width {
-  grid-column: span 2;
-}
-
-/* Selection Boxes (Methods & Privacy) */
-.selection-row {
-  margin: 2rem 0;
-   display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.options-group {
-  display: flex;
-  gap: 2rem;
-  /* margin-top: 1rem; */
-}
-
-.custom-option {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  cursor: pointer;
-}
-
-.custom-option input {
-  display: none; /* Hide native input */
-}
-
-.custom-box {
-  width: 22px;
-  height: 22px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  /* background: #fff; */
-  display: inline-block;
-  position: relative;
-}
-
-/* Blue indicator for selection */
-.blue-box, 
-.custom-option input:checked + .custom-box {
-  background-color: #0d3b66;
-  border-color: #0d3b66;
-}
-
-/* Submit Button */
-.submit-btn {
-  width: 100%;
-  padding: 1.2rem;
-  background-color: #0d3b66; /* Matching footer */
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-size: 1.3rem;
+.legal-list li::marker {
   font-weight: 700;
+  color: #0d3b66;
+}
+
+.privacy-ack {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem; 
+  padding: 0;
+  border-radius: 8px;
+  margin-top: 4rem;    
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* The custom checkbox input */
+.ack-checkbox {
+  appearance: none; /* Removes default browser styling */
+  -webkit-appearance: none;
+  width: 45px;
+  height: 45px;
+  border: 1.5px solid #333;
+  border-radius: 8px;
+  background-color: transparent;
   cursor: pointer;
-  transition: transform 0.2s;
-  margin-top: 2rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: background-color 0.2s;
 }
 
-.submit-btn:hover {
-  transform: translateY(-2px);
-  background-color: #092a4a;
+/* The checkmark (appears when checked) */
+.ack-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 22px;
+  border: solid #333;
+  border-width: 0 3px 3px 0; /* Creates the "L" shape */
+  transform: rotate(45deg); /* Rotates the "L" into a checkmark */
+  margin-bottom: 5px; /* Adjusts vertical centering within the box */
 }
 
+/* Visual feedback on hover */
+.ack-checkbox:hover {
+  background-color: #f0f0f0;
+}
+
+.ack-text {
+  font-family: "Inter", sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: #333;
+  cursor: pointer; /* Makes text feel clickable */
+  /* padding-top: 8px; */
+}
 /* Mobile Adjustments */
-@media (max-width: 992px) {
-  .contact-intro { flex-direction: column-reverse; text-align: center; }
-  .form-grid { grid-template-columns: 1fr; }
-  .full-width { grid-column: span 1; }
-  .options-group { flex-wrap: wrap; }
-}
-/*=============================
-  * Contact Form Section
-  =============================*/ 
- 
-
-  /*=============================
-  * contact-social  Section
-  =============================*/
- /* --- Social Contact Section --- */
-.contact-social {
-  padding: 5rem 0;
-  background-color: #ffffff;
-  overflow: hidden; /* Ensures the pill shape doesn't cause horizontal scroll */
-}
-
-.social-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0; /* Reduced gap so the card can overlap the illustration */
-}
-
-/* Illustration Styling */
-.social-illustration {
-  flex: 1.2;
-  z-index: 100;
-}
-
-.social-illustration img {
-  width: 100%;
-  max-width: 768px;
-  height: auto;
-  border-radius: 256px;
-}
-
-/* THE PILL CARD: Using the shape of Rectangle 102.png */
-.social-handles-card {
-  flex: 1;
-  background-color: #e9ecef; /* Light grey/blue background */
-  /* This creates the extreme curve on the left seen in Rectangle 102.png */
-  border-radius: 312.5px 18px 18px 312.5px; 
-  padding: 3rem 3rem 3rem 9rem;  
-  margin-left: -100px; /* Overlaps with the illustration like the design */
-  box-shadow: 0 10px 40px rgba(0,0,0,0.04);
-  margin-left: -15%;
-  max-height: 256px;
-  max-width: 814px;
-  z-index: 2;
-}
-
-.social-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2x2 Grid */
-  gap: 3rem 2rem;
-}
-
-.social-item {
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-}
-
-/* PNG Image Icons */
-.social-png {
-  width: 38px; /* Slightly larger for better visibility */
-  height: auto;
-  object-fit: contain;
-}
-
-.social-item span {
-  font-size: 1.25rem;
-  color: #0d3b66; /* Brand blue text */
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 1024px) {
-  .social-handles-card {
-    margin-left: 0;
-    border-radius: 50px 25px 25px 50px;
-    padding: 3rem;
-  }
-}
-
 @media (max-width: 768px) {
-  .social-wrapper {
-    flex-direction: column;
+  .terms-content {
+    padding: 2rem 1rem;
   }
-  .social-handles-card {
-    width: 90%;
-    border-radius: 30px; /* Simple rounded corners on mobile for better space usage */
-    padding: 2.5rem;
-    margin-top: 2rem;
-  }
-  .social-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
+  .section-number {
+    font-size: 1.5rem;
   }
 }
-  /*=============================
-  * End of contact-social Section*/
+/*----------------------------
+-*/
+/*=============================
+* Privacy Content Section
+=============================*/
+.privacy-content {
+  font-family: "Roboto", sans-serif;
+  background-color: #F5F5F5;
+  padding: 5rem 0; /* Vertical breathing room */
+  color: #333333;
+}
+
+.content-wrapper {
+  max-width: 900px; /* Optimal reading width for long text */
+  margin: 0 auto;
+  padding: 0 0px;
+}
+
+.privacy-section {
+  margin-bottom: 3rem; /* Spacing between numbered sections */
+}
+
+.section-title {
+  font-family: "Roboto", sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 1.5rem;
+}
+
+.section-intro {
+  font-family: "Roboto", sans-serif;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  line-height: 65px;
+  font-size: 20px;
+}
+
+/* List Styling */
+.privacy-list {
+  list-style: none; /* We will use custom bullets for better control */
+  padding-left: 0;
+}
+
+.privacy-list li {
+  font-family: "Roboto", sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #444;
+  margin-bottom: 1.2rem;
+  position: relative;
+  padding-left: 1.5rem; /* Space for the bullet */
+}
+
+/* Custom Bullet Point (Matches the dot style in your image) */
+.privacy-list li::before {
+  content: "•";
+  color: #333;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* Bold text within list items */
+.privacy-list li strong {
+  color: #222;
+  font-weight: 600;
+}
+.privacy-ack {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem; 
+  padding: 0;
+  border-radius: 8px;
+  margin-top: 4rem;
+}
+
+/* The custom checkbox input */
+.ack-checkbox {
+  appearance: none; /* Removes default browser styling */
+  -webkit-appearance: none;
+  width: 45px;
+  height: 45px;
+  border: 1.5px solid #333;
+  border-radius: 8px;
+  background-color: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+/* The checkmark (appears when checked) */
+.ack-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 22px;
+  border: solid #333;
+  border-width: 0 3px 3px 0; /* Creates the "L" shape */
+  transform: rotate(45deg); /* Rotates the "L" into a checkmark */
+  margin-bottom: 5px; /* Adjusts vertical centering within the box */
+}
+
+/* Visual feedback on hover */
+.ack-checkbox:hover {
+  background-color: #f0f0f0;
+}
+
+.ack-text {
+  font-family: "Inter", sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: #333;
+  cursor: pointer; /* Makes text feel clickable */
+  /* padding-top: 8px; */
+}
+/* Responsive */
+@media (max-width: 768px) {
+  .privacy-content {
+    padding: 3rem 0;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+}
 
   /*=============================
   *  Footer Section
