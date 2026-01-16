@@ -57,7 +57,7 @@ body {
     line-height: 21px;    /* Figma Line Height */
     color: #0D3B66;       /* Figma Text Color */
     position: relative;   /* For the custom underline */
-    padding: 4px 0;
+    padding: 0;
     transition: color 0.2s ease;
 }
 
@@ -69,7 +69,7 @@ body {
 .nav-link.is-active::after {
     content: "";
     position: absolute;
-    bottom: -2px;
+    bottom: 0;
     left: 0;
     width: 100%;
     height: 2px;
@@ -280,8 +280,10 @@ body {
 .custom-option input:checked + .custom-box {
   background-color: #0d3b66;
   border-color: #0d3b66;
+} 
+.custom-option:last-child input:checked + .custom-box::after {
+  border-color: #fff;
 }
-
 /* Submit Button */
 .submit-btn {
   width: 100%;
@@ -295,6 +297,18 @@ body {
   cursor: pointer;
   transition: transform 0.2s;
   margin-top: 2rem;
+
+  /* Send Message */
+
+font-family: 'Inter';
+font-style: normal;
+font-weight: 500;
+font-size: 33px;
+line-height: 65px;
+/* identical to box height, or 197% */
+ 
+
+
 }
 
 .submit-btn:hover {
@@ -313,104 +327,145 @@ body {
   * Contact Form Section
   =============================*/ 
  
+/*=============================
+  Contact Social Section
+=============================*/
 
-  /*=============================
-  * contact-social  Section
-  =============================*/
- /* --- Social Contact Section --- */
 .contact-social {
   padding: 5rem 0;
   background-color: #ffffff;
-  overflow: hidden; /* Ensures the pill shape doesn't cause horizontal scroll */
+  overflow-x: hidden;
 }
 
+/* Wrapper */
 .social-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0; /* Reduced gap so the card can overlap the illustration */
+  gap: 2rem;
 }
 
-/* Illustration Styling */
+/* Illustration */
 .social-illustration {
   flex: 1.2;
-  z-index: 100;
+  z-index: 2;
 }
 
 .social-illustration img {
   width: 100%;
-  max-width: 768px;
+  max-width: 760px;
   height: auto;
-  border-radius: 256px;
+  border-radius: 200px;
+  display: block;
 }
 
-/* THE PILL CARD: Using the shape of Rectangle 102.png */
+/* Pill Card */
 .social-handles-card {
   flex: 1;
-  background-color: #e9ecef; /* Light grey/blue background */
-  /* This creates the extreme curve on the left seen in Rectangle 102.png */
-  border-radius: 312.5px 18px 18px 312.5px; 
-  padding: 3rem 3rem 3rem 9rem;  
-  margin-left: -100px; /* Overlaps with the illustration like the design */
-  box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+  background-color: #e9ecef;
+  border-radius: 300px 24px 24px 300px;
+  padding: 3rem 3rem 3rem 8rem;
   margin-left: -15%;
-  max-height: 256px;
-  max-width: 814px;
-  z-index: 2;
+  max-width: 820px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+  z-index: 1;
 }
 
+/* Social Grid */
 .social-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2x2 Grid */
-  gap: 3rem 2rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2.5rem 2rem;
 }
 
+/* Social Item */
 .social-item {
   display: flex;
   align-items: center;
   gap: 1.2rem;
 }
 
-/* PNG Image Icons */
+/* Icon */
 .social-png {
-  width: 38px; /* Slightly larger for better visibility */
+  width: 36px;
   height: auto;
   object-fit: contain;
 }
 
+/* Text */
 .social-item span {
-  font-size: 1.25rem;
-  color: #0d3b66; /* Brand blue text */
+  font-size: 1.2rem;
+  color: #0d3b66;
   font-weight: 500;
   white-space: nowrap;
 }
 
-/* Responsive Adjustments */
+/* =============================
+   RESPONSIVE
+============================= */
+
+/* Tablet */
 @media (max-width: 1024px) {
+  .social-wrapper {
+    gap: 3rem;
+  }
+
   .social-handles-card {
     margin-left: 0;
-    border-radius: 50px 25px 25px 50px;
     padding: 3rem;
+    border-radius: 60px;
   }
 }
 
+/* Mobile */
 @media (max-width: 768px) {
   .social-wrapper {
     flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
+
+  .social-illustration img {
+    border-radius: 40px;
+  }
+
   .social-handles-card {
-    width: 90%;
-    border-radius: 30px; /* Simple rounded corners on mobile for better space usage */
+    width: 100%;
+    max-width: 420px;
     padding: 2.5rem;
-    margin-top: 2rem;
+    border-radius: 30px;
+    margin: 0 auto;
   }
+
   .social-grid {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.8rem;
+  }
+
+  .social-item {
+    justify-content: center;
+  }
+
+  .social-item span {
+    font-size: 1.1rem;
   }
 }
-  /*=============================
-  * End of contact-social Section*/
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .social-png {
+    width: 32px;
+  }
+
+  .social-item span {
+    font-size: 1rem;
+  }
+}
+
+/*=============================
+  End Contact Social Section
+=============================*/
+
 
   /*=============================
   *  Footer Section
