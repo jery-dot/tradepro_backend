@@ -173,4 +173,6 @@ class ContractorController extends Controller
             'requirements' => $requirements,
         ]);
     }
+    
+
 }

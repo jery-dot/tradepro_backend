@@ -19,6 +19,12 @@ class User extends Authenticatable implements JWTSubject
         'user_type',
         'latitude',
         'longitude',
+        'city',
+        'state',
+        'country',
+        'job_requirements',
+        'rating',
+        'status',
         'available_today',
         'profile_image',
     ];
@@ -27,12 +33,34 @@ class User extends Authenticatable implements JWTSubject
         'password',
     ];
 
+    public function getLocationTextAttribute(): string
+    {
+        $location = '';
+        if ($this->city) {
+            $location .= $this->city;
+        }
+        if ($this->state) {
+            if (! empty($location)) {
+                $location .= ', ';
+            }
+        }
+        if ($this->country) {
+            if (! empty($location)) {
+                $location .= ', ';
+            }
+            $location .= $this->country;
+        }
+
+        return $location;
+    }
+
     protected function casts(): array
     {
         return [
             'latitude' => 'float',
             'longitude' => 'float',
-            'user_type' => UserType::class
+            'user_type' => UserType::class,
+            'job_requirements' => 'array',
         ];
     }
 
@@ -46,7 +74,6 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
-
 
     // Profiles
 
@@ -75,5 +102,48 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Review::class, 'reviewee_id');
     }
 
+    /**
+     * Role label from user_type enum
+     */
+    public function getRoleLabelAttribute(): string
+    {
+        return match ($this->user_type) {
+            UserType::CONTRACTOR => 'Contractor',
+            UserType::SUBCONTRACTOR => 'Subcontractor',
+            UserType::LABORER => 'Laborer',
+            UserType::APPRENTICE => 'Apprentice',
+            default => 'Unknown'
+        };
+    }
+
+    /**
+     * Ratings data (avg + count)
+     */
+    public function getRatingsDataAttribute()
+    {
+        $rating = round($this->receivedReviews()->avg('overall_rating') ?? 0, 1);
+        $count = $this->receivedReviews()->count();
+
+        return [
+            'rating' => $rating,
+            'ratings_count' => $count,
+        ];
+    }
+
+    /**
+     * Uploaded document metadata (null-safe)
+     */
+    public function getUploadedDocumentAttribute()
+    {
+        if (! $this->profile_document_url) {
+            return null;
+        }
+
+        return [
+            'file_name' => $this->profile_document_name,
+            'file_size' => $this->profile_document_size,
+            'document_url' => $this->profile_document_url,
+        ];
+    }
 
 }

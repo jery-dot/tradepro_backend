@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V1\Auth;
 
 use App\Enums\UserType;
 use App\Helpers\ApiResponse;
+use App\Helpers\FileUploadHelper;
 use App\Http\Controllers\Controller;
 use App\Models\PasswordResetOtp;
 use App\Models\User;
@@ -402,7 +403,6 @@ class AuthController extends Controller
         ]);
     }
 
-
     /**
      * POST /api/auth/reset-password
      */
@@ -459,4 +459,5 @@ class AuthController extends Controller
 
         return ApiResponse::success('Password reset successfully');
     }
+
 }

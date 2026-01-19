@@ -311,4 +311,109 @@ class ReviewController extends Controller
 
         return ApiResponse::success('', ['data' => $data]);
     }
+
+
+    /**
+     * Get all reviews for a specific user (Based on User ID).
+     *
+     * Endpoint:
+     * GET /api/get_user_reviews
+     *
+     * Headers:
+     *   Authorization: Bearer <ACCESS_TOKEN>
+     *   Content-Type: application/json
+     *
+     * Query Parameters:
+     *   user_id=contractor_001  (Required - e.g. contractor_001, laborer_002, apprentice_003)
+     *   page=1                 (Optional - default: 1)
+     *   limit=4                (Optional - default: 10, max: 100)
+     *
+     * Response:
+     * {
+     *   "status": "success",
+     *   "message": "User reviews fetched successfully.",
+     *   "total_results": 22,
+     *   "page": 1,
+     *   "limit": 4,
+     *   "data": [
+     *     {
+     *       "reviewer_name": "Raj Mohal",
+     *       "reviewer_image_url": "https://example.com/profile/reviewer_001.png",
+     *       "rating": 5,
+     *       "title": "Kitchen Renovation",
+     *       "review_text": "Excellent work! Very professional...",
+     *       "review_date": "2025-10-01"
+     *     }
+     *   ]
+     * }
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUserReviews(Request $request)
+    {
+        $user = auth('api')->user();
+
+        $validated = $request->validate([
+            'user_id' => 'required',
+            'page' => 'integer|min:1',
+            'limit' => 'integer|min:1|max:100',
+        ]);
+
+        // Parse user_id (contractor_001, laborer_002, etc.)
+        // $targetUserId = $this->parseUserId($validated['user_id']);
+        $targetUserId = ($validated['user_id']);
+
+        // if (! $targetUserId) {
+        //     return response()->json([
+        //         'status' => 'error',
+        //         'message' => 'Invalid user_id format.',
+        //     ], 422);
+        // }
+
+        $page = $request->query('page', 1);
+        $limit = $request->query('limit', 10);
+        $limit = $limit > 0 ? min($limit, 100) : 10;
+
+        // Fetch reviews where this user is reviewee
+        $query = Review::with('reviewer')
+            ->where('reviewee_id', $targetUserId)
+            ->orderByDesc('created_at');
+
+        $paginator = $query->paginate($limit, ['*'], 'page', $page);
+
+        $reviews = $paginator->getCollection()->map(function (Review $review) {
+            $reviewer = $review->reviewer;
+
+            return [
+                'reviewer_name' => $reviewer?->name ?? 'Anonymous',
+                'reviewer_image_url' => $reviewer?->profile_image ?? null,
+                'rating' => (int) $review->overall_rating,
+                'title' => $review->jobPost->title ?? 'Job Review',
+                'review_text' => $review->comment,
+                'review_date' => $review->created_at?->format('Y-m-d'),
+            ];
+        })->values()->all(); // transform Eloquent to API shape.[web:39]
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'User reviews fetched successfully.',
+            'total_results' => $paginator->total(),
+            'page' => $paginator->currentPage(),
+            'limit' => $paginator->perPage(),
+            'data' => $reviews,
+        ]);
+    }
+
+    /**
+     * Parse user_id format to actual user ID.
+     * contractor_001 → 1, laborer_002 → 2, apprentice_003 → 3, etc.
+     */
+    private function parseUserId(string $userId): ?int
+    {
+        if (! preg_match('/^(contractor|laborer|apprentice|subcontractor)_(\d+)$/', $userId, $matches)) {
+            return null;
+        }
+
+        return (int) $matches[2];
+    }
 }
