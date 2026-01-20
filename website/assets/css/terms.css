@@ -111,7 +111,7 @@ body {
 
 .privacy-title {
   /* To get the textured look, use a font like 'Bungee' or 'Roboto Black' */
-  font-family: "Road Rage", sans-serif;
+  font-family: "League Spartan", sans-serif;
   font-weight: 900;
   font-size: 4rem;
   letter-spacing: 1px;
@@ -151,11 +151,11 @@ body {
   .privacy-hero {
     padding: 5rem 0;
   }
-  
+
   .privacy-title {
     font-size: 2.5rem;
   }
-  
+
   .privacy-intro {
     font-size: 1rem;
   }
@@ -217,10 +217,10 @@ Terms Content Section*/
 .privacy-ack {
   display: flex;
   align-items: flex-start;
-  gap: 1.5rem; 
+  gap: 1.5rem;
   padding: 0;
   border-radius: 8px;
-  margin-top: 4rem;    
+  margin-top: 4rem;
   max-width: 900px;
   margin: 0 auto;
 }
@@ -349,7 +349,7 @@ Terms Content Section*/
 .privacy-ack {
   display: flex;
   align-items: flex-start;
-  gap: 1.5rem; 
+  gap: 1.5rem;
   padding: 0;
   border-radius: 8px;
   margin-top: 4rem;
@@ -403,7 +403,7 @@ Terms Content Section*/
   .privacy-content {
     padding: 3rem 0;
   }
-  
+
   .section-title {
     font-size: 1.5rem;
   }
@@ -425,15 +425,15 @@ Terms Content Section*/
   grid-template-columns: 1.5fr 1fr 2fr; /* Matches your design layout */
   gap: 6rem;
   padding-bottom: 2rem;
-  
+
   /* Centering Logic */
   max-width: 1200px;      /* Adjust this to match your site's content width */
   margin: 0 auto;         /* Perfectly centers the grid horizontally */
   padding-left: 0px;     /* Adds a safety gutter for mobile */
   padding-right: 0px;
-  
+
   /* Optional: Vertically aligns columns if they have different heights */
-  align-items: start; 
+  align-items: start;
 }
 .footer-logo {
   height: 106px;
@@ -467,7 +467,7 @@ Terms Content Section*/
 .footer-links{
 margin-top: 3rem !important;
 }
-.footer-links h3, 
+.footer-links h3,
 .footer-app h3 {
   font-family: "Roboto", sans-serif;
   color: #0d3b66;
@@ -550,7 +550,7 @@ margin-top: 3rem !important;
     text-align: center;
     gap: 10px;
   }
-  
+
   .social-links, .app-badges {
     justify-content: center;
   }
@@ -566,10 +566,10 @@ margin-top: 3rem !important;
 @media (max-width: 992px) {
   .app-badges {
     /* Reset the margins used for desktop alignment */
-    margin-right: 0 !important; 
+    margin-right: 0 !important;
     margin-left: 0 !important;
     margin-top: 2rem; /* Adds space between the text/phone and the buttons */
-    
+
     /* Ensure it spans the width of the column to allow centering */
     width: 100%;
     display: flex;
@@ -577,7 +577,7 @@ margin-top: 3rem !important;
     align-items: center;
     gap: 15px;
   }
-  
+
   /* Optional: Stack buttons vertically on very small screens (phones) */
   @media (max-width: 480px) {
     .app-badges {
@@ -592,23 +592,23 @@ margin-top: 3rem !important;
   display: flex;
     /* Change from horizontal to vertical */
     flex-direction: column;
-    
+
     /* Center the flex items (text and phone) */
-    align-items: center; 
-    
+    align-items: center;
+
     /* Center the text itself */
     text-align: center;
-    
+
     /* Give them some breathing room when stacked */
-    gap: 2rem; 
-    
+    gap: 2rem;
+
     /* Ensure the container takes full width to allow centering */
     width: 100%;
   }
 
   /* Reset the phone mockup margins for mobile */
   .footer-phone-mockup {
-    margin-top: 0; 
+    margin-top: 0;
     margin-right: 0;
     width: 120px; /* Optional: scale the phone down slightly for mobile */
   }

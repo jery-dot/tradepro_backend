@@ -118,19 +118,20 @@ body {
     inset: 0;
     background: rgba(13, 59, 102, 0.75); /* TradePro Navy with 75% opacity */
     z-index: 1;
-}   
+}
 
 .contact-hero-content {
   display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
+    flex-direction: column;
 }
 
 .contact-hero h1 {
-    font-family: 'Road Rage', sans-serif;
-    font-size: clamp(3rem, 10vw, 5rem); /* Responsive size */
-    font-weight: 400;
+    font-family: "League Spartan", sans-serif;
+    font-size: 55px; /* Responsive size */
+    font-weight: 700;
     margin-bottom: 20px;
     letter-spacing: 2px;
 }
@@ -148,7 +149,7 @@ body {
     .contact-hero {
         padding: 60px 0;
     }
-}                                                   
+}
 
 /* --- Contact Page Styles --- */
 /* --- Contact Page Redesign --- */
@@ -164,7 +165,7 @@ body {
   gap: 3rem;
   max-width: 1000px;
   margin: 0 auto;
-  margin-bottom: -5px;  
+  margin-bottom: -5px;
 }
 
 .intro-image img {
@@ -194,7 +195,7 @@ body {
   margin: 0 auto;
   position: relative;
   z-index: 2;
-  box-shadow: 0 4px 12px rgba(13, 59, 102, 0.15); 
+  box-shadow: 0 4px 12px rgba(13, 59, 102, 0.15);
 }
 
 .card-title {
@@ -226,7 +227,7 @@ body {
   color: #333;
 }
 
-.form-field input, 
+.form-field input,
 .form-field textarea {
   padding: 1.2rem;
   background-color: #0D3B661A; /* Light grey inputs */
@@ -276,11 +277,11 @@ body {
 }
 
 /* Blue indicator for selection */
-.blue-box, 
+.blue-box,
 .custom-option input:checked + .custom-box {
   background-color: #0d3b66;
   border-color: #0d3b66;
-} 
+}
 .custom-option:last-child input:checked + .custom-box::after {
   border-color: #fff;
 }
@@ -306,7 +307,7 @@ font-weight: 500;
 font-size: 33px;
 line-height: 65px;
 /* identical to box height, or 197% */
- 
+
 
 
 }
@@ -325,8 +326,8 @@ line-height: 65px;
 }
 /*=============================
   * Contact Form Section
-  =============================*/ 
- 
+  =============================*/
+
 /*=============================
   Contact Social Section
 =============================*/
@@ -483,15 +484,15 @@ line-height: 65px;
   grid-template-columns: 1.5fr 1fr 2fr; /* Matches your design layout */
   gap: 6rem;
   padding-bottom: 2rem;
-  
+
   /* Centering Logic */
   max-width: 1200px;      /* Adjust this to match your site's content width */
   margin: 0 auto;         /* Perfectly centers the grid horizontally */
   padding-left: 0px;     /* Adds a safety gutter for mobile */
   padding-right: 0px;
-  
+
   /* Optional: Vertically aligns columns if they have different heights */
-  align-items: start; 
+  align-items: start;
 }
 .footer-logo {
   height: 106px;
@@ -525,9 +526,9 @@ line-height: 65px;
 .footer-links{
 margin-top: 3rem !important;
 }
-.footer-links h3, 
+.footer-links h3,
 .footer-app h3 {
-  font-family: "Roboto", sans-serif;
+  font-family: "Inter", sans-serif ;
   color: #0d3b66;
   font-size: 1.4rem;
   margin-bottom: 1rem;
@@ -608,7 +609,7 @@ margin-top: 3rem !important;
     text-align: center;
     gap: 10px;
   }
-  
+
   .social-links, .app-badges {
     justify-content: center;
   }
@@ -624,10 +625,10 @@ margin-top: 3rem !important;
 @media (max-width: 992px) {
   .app-badges {
     /* Reset the margins used for desktop alignment */
-    margin-right: 0 !important; 
+    margin-right: 0 !important;
     margin-left: 0 !important;
     margin-top: 2rem; /* Adds space between the text/phone and the buttons */
-    
+
     /* Ensure it spans the width of the column to allow centering */
     width: 100%;
     display: flex;
@@ -635,7 +636,7 @@ margin-top: 3rem !important;
     align-items: center;
     gap: 15px;
   }
-  
+
   /* Optional: Stack buttons vertically on very small screens (phones) */
   @media (max-width: 480px) {
     .app-badges {
@@ -650,23 +651,23 @@ margin-top: 3rem !important;
   display: flex;
     /* Change from horizontal to vertical */
     flex-direction: column;
-    
+
     /* Center the flex items (text and phone) */
-    align-items: center; 
-    
+    align-items: center;
+
     /* Center the text itself */
     text-align: center;
-    
+
     /* Give them some breathing room when stacked */
-    gap: 2rem; 
-    
+    gap: 2rem;
+
     /* Ensure the container takes full width to allow centering */
     width: 100%;
   }
 
   /* Reset the phone mockup margins for mobile */
   .footer-phone-mockup {
-    margin-top: 0; 
+    margin-top: 0;
     margin-right: 0;
     width: 120px; /* Optional: scale the phone down slightly for mobile */
   }

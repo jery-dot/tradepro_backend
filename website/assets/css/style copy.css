@@ -298,164 +298,234 @@ body {
 * End of Hero Section */
 
 /* About section */
-/* Section Base */
+
 .about {
-    padding: 8rem 0;
-    background-color: #F5F5F5; /* Exact background from request */
-    overflow: hidden;
+  padding: 6rem 0;
+  background-color: #f5f5f5;
 }
 
 .about-grid {
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: 5rem;
-    align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 3rem;
+  align-items: center;
 }
 
-/* Left Text Content */
+/* About text block – replacement for Figma's width/height/left/top */
+.about-text {
+  max-width: 500px;
+  /* ~498px from Figma */
+}
+
 .about-text h2 {
-    color: #0d3b66;
-    font-size: 2.8rem;
-    margin-bottom: 2rem;
-    font-weight: 700;
+  color: #0d3b66; /* TradePro Blue */
+  font-size: 2.2rem;
+  margin-bottom: 1.5rem;
 }
 
 .about-text p {
-    line-height: 1.6;
-    color: #333;
-    margin-bottom: 1.5rem;
-    font-size: 1.05rem;
+  line-height: 1.6;
+  margin-bottom: 1.2rem;
+  color: #333;
 }
 
-/* Collapsible logic */
-.collapsible-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease, opacity 0.3s ease;
-    opacity: 0;
-}
-
-.collapsible-content.active {
-    max-height: 1000px;
-    opacity: 1;
-    margin-bottom: 1.5rem;
-}
-
-/* Button & SVG Alignment */
 .btn-primary-svg {
-    background: none;
-    border: none;
-    cursor: pointer;
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #btn-label {
-    position: absolute;
-    color: white;
-    font-weight: 700;
-    font-size: 0.9rem;
-    z-index: 10;
-    letter-spacing: 1px;
+  position: absolute;
+  color: white;
+  font-weight: bold;
+  font-size: 0.9rem;
+  z-index: 10;
+  pointer-events: none; /* Allows click to pass through to button */
+  letter-spacing: 1px;
 }
 
-/* Collage Positioning - The Exact Structure */
+.btn-primary-svg svg {
+  transition: transform 0.2s ease;
+}
+
+.btn-primary-svg:hover svg {
+  transform: scale(1.02);
+}
+
+/* Explore More button */
+.btn-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: start !important;
+  justify-content: start;
+  padding: 0.9rem 2.8rem 0.9rem 2.2rem;
+  left: -110px;
+}
+
+
+
+
+/* Right-side stacked images */
+
 .about-visual {
-    display: flex;
-    justify-content: center;
-    position: relative;
+  position: absolute;
+  display: grid;
+  right: 100px;
+  /* grid-template-rows: auto auto auto; */
+  /* gap: 1.25rem; */
 }
 
-.collage-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 500px;
-    height: 600px; /* Reference height */
+.about-img {
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
 }
 
-.collage-item {
-    position: absolute;
-    border-radius: 25px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+.about-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.collage-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+/* approximate layout offsets */
+
+.about-img--top {
+  width: 577px;
+  height: 181px;
+  margin-bottom: 1.5rem;
 }
 
-/* Item 1: Welding (Top Center-Right) */
-.img-welding {
-    top: 0;
-    right: 0;
-    width: 85%;
-    height: 25%;
-    z-index: 1;
+.about-img--middle {
+  position: relative;
+  width: 577px;
+  height: 352.92578125px;
 }
 
-/* Item 2: Team (Middle Right) */
-.img-team {
-    top: 28%;
-    right: 0;
-    width: 85%;
-    /* height: ; */
-    z-index: 2;
-    left: auto;
+.about-img--bottom {
+  position: absolute;
+  left: -15%;
+  bottom: -30px;
+  width: 272px;
+  height: 248px;
+  box-shadow: none !important;
 }
 
-/* Item 3: Tool (Overlapping Middle Left) */
-.img-tool {
-    top: 45%;
-    left: 0;
-    width: 45%;
-    height: 30%;
-    z-index: 4;
-    background: #F5F5F5; /* Matches section bg for the gap effect */
-    padding: 8px;
-}
-.tool-inner { border-radius: 18px; overflow: hidden; height: 100%; }
-
-/* Item 4: Construction (Bottom Left/Center) */
-.img-construction {
-    bottom: 0;
-    left: 0;
-    width: 65%;
-    height: 25%;
-    z-index: 3;
+/* Wrapper: only padding + bg + radius, NO shadow */
+.about-img-card {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  /* “border” thickness */
+  background-color: #f5f5f5;
+  /* same as about section bg */
+  border-radius: 22px;
+  box-sizing: border-box;
+  box-shadow: none !important;
 }
 
-/* 12K+ Badge (Exact placement overlapping Team/Construction) */
-.users-badge {
-    position: absolute;
-    bottom: 15%;
-    right: -10px;
-    background: #0d3b66;
-    color: white;
-    width: 160px;
-    height: 150px;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 5;
-    box-shadow: 10px 10px 30px rgba(0,0,0,0.2);
+/* Image: full radius + shadow */
+.about-img-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+  /* shadow on image */
 }
 
-.badge-num { font-size: 2.2rem; font-weight: 800; line-height: 1; }
-.badge-label { font-size: 1rem; font-weight: 600; margin-top: 5px; }
+.about-img--bottom .about-img-card img {
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+}
 
-/* Responsive Adjustments */
+/* 1200+ users badge */
+
+.about-badge {
+  position: absolute;
+  left: 32%;
+  right: 0;
+  bottom: -75px;
+  background: #0d3b66;
+  color: #ffffff;
+  border-radius: 16px;
+  width: 181px;
+  height: 141px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.about-badge-number {
+  font-family: "Roboto", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.about-badge-label {
+  font-family: "Roboto", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Responsive */
+
 @media (max-width: 992px) {
-    .about-grid { grid-template-columns: 1fr; text-align: center; gap: 4rem; }
-    .about-text { max-width: 100%; }
-    .about-visual { padding-bottom: 2rem; }
-    .collage-wrapper { height: 500px; max-width: 450px; }
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-visual {
+    max-width: 500px;
+    margin: 0 auto;
+    display: block;
+    /* Ensures the element respects the auto margin */
+    width: 100%;
+    position: relative;
+    right: 0;
+  }
+
+  .about-visual svg {
+    width: 100%;
+  }
+
+  .about-badge {
+    transform: translate(10%, 20%);
+  }
+
+  .btn-primary {
+    margin: 0;
+    width: 100%;
+    position: absolute;
+  }
+}
+
+@media (max-width: 600px) {
+  .about {
+    padding: 4rem 0;
+  }
+
+  .about-text h2 {
+    font-size: 2.4rem;
+  }
+
+  .about-badge {
+    position: static;
+    transform: none;
+    margin-top: 1.5rem;
+  }
 }
 
 /*===============================
