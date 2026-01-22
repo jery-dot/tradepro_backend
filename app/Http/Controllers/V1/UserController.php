@@ -5,6 +5,7 @@ namespace App\Http\Controllers\V1;
 use App\Enums\UserType;
 use App\Helpers\FileUploadHelper;
 use App\Http\Controllers\Controller;
+use App\Models\JobRequirement;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -35,7 +36,7 @@ class UserController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Profile image updated successfully.',
-            'id' => 'user_'.$user->id,
+            'id' => $user->id,
             'profile_image_url' => $user->profile_image,
             'updated_at' => $user->updated_at?->toIso8601String(),
         ]);
@@ -63,16 +64,38 @@ class UserController extends Controller
             'job_requirements.*' => 'string|max:255',
         ]);
 
-        $user->job_requirements = $validated['job_requirements'];
-        $user->save();
+         $incomingSlugs = $request->input('job_requirements', []);
+
+        // Fetch IDs from job_requirements table by slug column
+        $jobRequirementIds = JobRequirement::whereIn('slug', $incomingSlugs)
+            ->pluck('id')
+            ->all();
+
+        // Sync many-to-many pivot table contractor_job_requirement
+        // This will:
+        // - Attach new job requirements
+        // - Detach ones not present in $jobRequirementIds
+        $user->contractor->jobRequirements()->sync($jobRequirementIds);
+
+
+        // $user->job_requirements = $validated['job_requirements'];
+        $user->contractor->save();
+
+        $requirements = $user->contractor->jobRequirements()
+            ->select('job_requirements.id', 'job_requirements.name', 'job_requirements.slug')
+            ->get();
+
+        // Return slugs in response to match the request style
+        $jobRequirementSlugs = $requirements->pluck('name')->values()->all();
+
 
         return response()->json([
             'status' => 'success',
             'message' => 'Typical job requirements updated successfully.',
-            'id' => 'user_'.$user->id,
+            'id' => $user->id,
             'updated_at' => $user->updated_at?->toIso8601String(),
             'data' => [
-                'job_requirements' => $user->job_requirements,
+                'job_requirements' => $jobRequirementSlugs,
             ],
         ]);
     }
@@ -86,13 +109,39 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
+    function formatFileSize($bytes, $precision = 2)
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        if ($bytes <= 0) {
+            return '0 B';
+        }
+
+        $power = floor(log($bytes, 1024));
+        $power = min($power, count($units) - 1);
+
+        return round($bytes / pow(1024, $power), $precision) . ' ' . $units[$power];
+    }
+
     public function updateProfileDocument(Request $request)
     {
         $user = auth('api')->user();
 
+        try {
             $validated = $request->validate([
                 'insurance_file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
-            ]); // typical file validation for documents.[web:105][web:111]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => "The insurance file field is required.",
+            ], 422);
+        }
+
+        $file = $request->file('insurance_file');
+
+        $sizeBytes = $file->getSize();
+        $fileSize = $this->formatFileSize($sizeBytes);
 
         if ($user->user_type == UserType::CONTRACTOR) {
 
@@ -124,10 +173,10 @@ class UserController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Profile document updated successfully.',
-                'id' => 'user_'.$user->id,
+                'id' => $user->id,
                 'document_url' => $API_URL.$user->contractor->file_path,
                 'file_name' => $file_info[1],
-                // 'file_size' => $user->contractor->file_size,
+                'file_size' => $fileSize,
                 'updated_at' => $user->updated_at?->toIso8601String(),
             ]);
         } elseif ($user->user_type == UserType::SUBCONTRACTOR) {
@@ -160,10 +209,10 @@ class UserController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Profile document updated successfully.',
-                'id' => 'user_'.$user->id,
+                'id' => $user->id,
                 'document_url' => $API_URL.$user->subcontractor->insurance_file_path,
                 'file_name' => $file_info[1],
-                // 'file_size' => $user->subcontractor->file_size,
+                'file_size' => $fileSize,
                 'updated_at' => $user->updated_at?->toIso8601String(),
             ]);
         }
@@ -210,7 +259,7 @@ class UserController extends Controller
             'status' => 'success',
             'message' => 'Contractor profile fetched successfully.',
             'data' => [
-                'id' => 'user_'.$user->id,
+                'id' => $user->id,
                 'full_name' => $user->name,
                 'role' => $user->role_label,
                 'rating' => $rating,
@@ -276,13 +325,16 @@ class UserController extends Controller
             'status' => 'success',
             'message' => 'Subcontractor data fetched successfully.',
             'data' => [
-                'id' => 'user_'.$user->id,
+                'id' => $user->id,
                 'full_name' => $user->name,
                 'role' => $user->role_label,
                 'rating' => $rating,
                 'profile_image_url' => $user->profile_image,
-                'location' => $user->location_text,
-                'uploaded_document' => $user->uploaded_document,
+                'location' => [
+                    'latitude' => $user->latitude,
+                    'longitude' => $user->longitude,
+                ],
+                'uploaded_document' => $user->subcontractor->insurance_file_path ?? null,
                 'ratings_count' => $ratingsCount,
                 'created_at' => $user->created_at?->toIso8601String(),
                 'updated_at' => $user->updated_at?->toIso8601String(),
@@ -326,13 +378,13 @@ class UserController extends Controller
             'status' => 'success',
             'message' => 'Apprentice profile fetched successfully.',
             'data' => [
-                'id' => 'user_'.$user->id,
+                'id' => $user->id,
                 'full_name' => $user->name,
                 'role' => $user->role_label,
                 'rating' => $user->ratings_data['rating'],
                 'profile_image_url' => $user->profile_image,
-                'school_name' => $apprentice?->school_name,
-                'program_name' => $apprentice?->program_name,
+                'school_name' => $apprentice?->trade_school_name,
+                'program_name' => $apprentice?->current_program_year,
                 'experience_level' => $apprentice?->experience_level,
                 'created_at' => $user->created_at?->toIso8601String(),
                 'updated_at' => $user->updated_at?->toIso8601String(),

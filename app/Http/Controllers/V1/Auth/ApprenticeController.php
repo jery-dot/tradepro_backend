@@ -120,6 +120,7 @@ class ApprenticeController extends Controller
         ]);
 
         // Find apprentice profile by public_id
+        // $apprenticeProfile = Apprentice::where('user_id', $user->id)->first();
         $apprenticeProfile = Apprentice::where('id', $validated['id'])->first();
 
         if (! $apprenticeProfile) {
@@ -152,7 +153,7 @@ class ApprenticeController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Experience level updated successfully.',
-            'id' => $apprenticeProfile->public_id,
+            'id' => $apprenticeProfile->id,
             'updated_at' => $apprenticeProfile->updated_at?->toIso8601String(),
             'data' => [
                 'experience_level' => $apprenticeProfile->experience_level,
