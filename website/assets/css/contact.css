@@ -275,6 +275,88 @@ body {
   display: inline-block;
   position: relative;
 }
+.custom-box2 {
+  width: 22px;
+  height: 22px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  /* background: #fff; */
+  display: inline-block;
+  position: relative;
+}
+/* Container */
+.privacy-row {
+  margin-top: 1.5rem;
+}
+
+/* Label layout */
+.agree-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #333;
+  user-select: none;
+}
+
+/* Custom checkbox */
+.ack-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid #333;
+  border-radius: 5px;
+  background-color: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  margin-top: 2px; /* aligns with first line of text */
+}
+
+/* Checkmark */
+.ack-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 12px;
+  border: solid #333;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  top: 3px;
+  left: 7px;
+}
+
+/* Hover feedback */
+.ack-checkbox:hover {
+  background-color: #f2f2f2;
+}
+
+/* Text */
+.agree-text {
+  flex: 1;
+}
+
+/* =====================
+   Responsive Text Only
+===================== */
+
+@media (max-width: 768px) {
+  .agree-option {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .agree-option {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+
 
 /* Blue indicator for selection */
 .blue-box,
@@ -288,33 +370,35 @@ body {
 /* Submit Button */
 .submit-btn {
   width: 100%;
-  padding: 1.2rem;
-  background-color: #0d3b66; /* Matching footer */
-  color: #fff;
+  padding: clamp(0.9rem, 2.5vw, 1.2rem);
+  background-color: #0d3b66;
+  color: #ffffff;
   border: none;
   border-radius: 12px;
-  font-size: 1.3rem;
-  font-weight: 700;
+
+  /* Typography */
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: clamp(1rem, 3.5vw, 1.3rem);
+  line-height: 1.4;
+  text-align: center;
+
   cursor: pointer;
-  transition: transform 0.2s;
   margin-top: 2rem;
-
-  /* Send Message */
-
-font-family: 'Inter';
-font-style: normal;
-font-weight: 500;
-font-size: 33px;
-line-height: 65px;
-/* identical to box height, or 197% */
-
-
-
+  transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
+/* Hover effect */
 .submit-btn:hover {
   transform: translateY(-2px);
   background-color: #092a4a;
+}
+
+/* Mobile optimization */
+@media (max-width: 480px) {
+  .submit-btn {
+    border-radius: 10px;
+  }
 }
 
 /* Mobile Adjustments */

@@ -90,29 +90,88 @@ class UserController extends Controller
     {
         $user = auth('api')->user();
 
-        $validated = $request->validate([
-            'profile_image' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
-        ]); // typical file validation for documents.[web:105][web:111]
+            $validated = $request->validate([
+                'insurance_file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+            ]); // typical file validation for documents.[web:105][web:111]
 
-        $file = $request->file('profile_image');
+        if ($user->user_type == UserType::CONTRACTOR) {
 
-        $url = FileUploadHelper::upload($file, 'profile-documents');
-        $size = round($file->getSize() / 1024 / 1024, 2).' MB';
+            // Old file (if any) to be deleted after successful upload
+            $oldFile = $user->contractor->file_path
+                ? basename($user->contractor->file_path)   // only filename, without directory
+                : null;
 
-        $user->profile_document_url = $url;
-        $user->profile_document_name = $file->getClientOriginalName();
-        $user->profile_document_size = $size;
-        $user->save();
+            // Upload new file to public/insurance via helper
+            $filename = FileUploadHelper::upload(
+                $request->file('insurance_file'),
+                'insurance',   // directory relative to public/
+                $oldFile,
+                'contractor_'.$user->contractor->id
+            );
+
+            // Persist relative path (so Storage::disk('public')->url() works)
+            // e.g. insurance/filename.ext
+            if ($filename) {
+                $user->contractor->file_path = 'insurance/'.$filename;
+            }
+
+            $user->contractor->save();
+
+            $file_info = explode('/', $user->contractor->file_path);
+
+            $API_URL = 'https://api.tradepro.services/';
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Profile document updated successfully.',
+                'id' => 'user_'.$user->id,
+                'document_url' => $API_URL.$user->contractor->file_path,
+                'file_name' => $file_info[1],
+                // 'file_size' => $user->contractor->file_size,
+                'updated_at' => $user->updated_at?->toIso8601String(),
+            ]);
+        } elseif ($user->user_type == UserType::SUBCONTRACTOR) {
+
+            // Old file (if any) to be deleted after successful upload
+            $oldFile = $user->subcontractor->insurance_file_path
+                ? basename($user->subcontractor->insurance_file_path)   // only filename, without directory
+                : null;
+
+            // Upload new file to public/insurance via helper
+            $filename = FileUploadHelper::upload(
+                $request->file('insurance_file'),
+                'insurance',   // directory relative to public/
+                $oldFile,
+                'subcontractor_'.$user->subcontractor->id
+            );
+
+            // Persist relative path (so Storage::disk('public')->url() works)
+            // e.g. insurance/filename.ext
+            if ($filename) {
+                $user->subcontractor->insurance_file_path = 'insurance/'.$filename;
+            }
+
+            $user->subcontractor->save();
+
+            $file_info = explode('/', $user->subcontractor->insurance_file_path);
+
+            $API_URL = 'https://api.tradepro.services/';
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Profile document updated successfully.',
+                'id' => 'user_'.$user->id,
+                'document_url' => $API_URL.$user->subcontractor->insurance_file_path,
+                'file_name' => $file_info[1],
+                // 'file_size' => $user->subcontractor->file_size,
+                'updated_at' => $user->updated_at?->toIso8601String(),
+            ]);
+        }
 
         return response()->json([
-            'status' => 'success',
-            'message' => 'Profile document updated successfully.',
-            'id' => 'user_'.$user->id,
-            'document_url' => $user->profile_document_url,
-            'file_name' => $user->profile_document_name,
-            'file_size' => $user->profile_document_size,
-            'updated_at' => $user->updated_at?->toIso8601String(),
-        ]);
+            "status" => false,
+            "message" => "Unauthorized"
+        ], 401);
     }
 
     /**
@@ -137,6 +196,16 @@ class UserController extends Controller
         $ratingsCount = $user->receivedReviews()->count();
         $rating = round($user->receivedReviews()->avg('overall_rating') ?? 0, 1);
 
+        // ---------------------------------------------------------------------
+        // Load related job requirements for response
+        // ---------------------------------------------------------------------
+        $requirements = $user->contractor->jobRequirements()
+            ->select('job_requirements.id', 'job_requirements.name', 'job_requirements.slug')
+            ->get();
+
+        // Return slugs in response to match the request style
+        $jobRequirementSlugs = $requirements->pluck('name')->values()->all();
+
         return response()->json([
             'status' => 'success',
             'message' => 'Contractor profile fetched successfully.',
@@ -146,9 +215,12 @@ class UserController extends Controller
                 'role' => $user->role_label,
                 'rating' => $rating,
                 'profile_image_url' => $user->profile_image,
-                'location' => $user->location_text,
-                'uploaded_document' => $user->uploaded_document,
-                'job_requirement' => $user->job_requirements[0] ?? null,
+                'location' => [
+                    'latitude' => $user->latitude,
+                    'longitude' => $user->longitude,
+                ],
+                'uploaded_document' => $user->contractor->file_path,
+                'job_requirement' => $jobRequirementSlugs,
                 'ratings_count' => $ratingsCount,
                 'created_at' => $user->created_at?->toIso8601String(),
                 'updated_at' => $user->updated_at?->toIso8601String(),
@@ -316,38 +388,21 @@ class UserController extends Controller
                 ], 401);
             }
 
-            // Cascade delete all related records
-            // $user->load([
-            //     'listings.images',           // listings + images
-            //     'opportunities',             // opportunities
-            //     'apprenticeProfile',         // apprentice profile
-            //     'laborer',                   // laborer profile
-            //     'contractor',                // contractor profile
-            //     'subcontractor',             // subcontractor profile
-            //     'notifications',             // notifications
-            //     'receivedReviews',           // reviews received
-            // ]);
-
-            // Soft delete first (if using SoftDeletes on profiles)
-            // $user->apprenticeProfile?->delete();
-            // $user->laborer?->delete();
-            // $user->contractor?->delete();
-            // $user->subcontractor?->delete();
-
             // Hard delete user + cascade deletes everything else
             $user->delete(); // triggers onDelete('cascade') on foreign keys.[web:39][web:13]
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Account deleted successfully.',
-                'user_id' => $user->getFormattedId(), // helper: contractor_001 format
+                'user_id' => $user->id, // helper: contractor_001 format
                 'deleted_at' => now()->toIso8601String(),
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'User not found.',
+                'message' => $e->getMessage(),
+                // 'message' => 'User not found.',
                 'error_code' => 'USER_NOT_FOUND',
             ], 404);
         }
@@ -534,83 +589,81 @@ class UserController extends Controller
     }
 
     /**
- * Update User Location API.
- *
- * Endpoint:
- * POST /api/update_location
- *
- * Headers:
- *   Authorization: Bearer <ACCESS_TOKEN>
- *   Content-Type: application/json
- *
- * Request Body:
- * {
- *   "latitude": 40.712776,
- *   "longitude": -74.005974,
- *   "address": "New York, NY, USA"
- * }
- *
- * Note: address is comma-separated "city, state, country"
- *
- * Response:
- * {
- *   "status": "success",
- *   "message": "Location updated successfully.",
- *   "data": {
- *     "latitude": 40.712776,
- *     "longitude": -74.005974,
- *     "address": "New York, NY, USA",
- *     "updated_at": "2025-10-01T12:20:15Z"
- *   }
- * }
- *
- * @param  \Illuminate\Http\Request  $request
- * @return \Illuminate\Http\JsonResponse
- */
-public function updateLocation(Request $request)
-{
-    $user = auth('api')->user();
+     * Update User Location API.
+     *
+     * Endpoint:
+     * POST /api/update_location
+     *
+     * Headers:
+     *   Authorization: Bearer <ACCESS_TOKEN>
+     *   Content-Type: application/json
+     *
+     * Request Body:
+     * {
+     *   "latitude": 40.712776,
+     *   "longitude": -74.005974,
+     *   "address": "New York, NY, USA"
+     * }
+     *
+     * Note: address is comma-separated "city, state, country"
+     *
+     * Response:
+     * {
+     *   "status": "success",
+     *   "message": "Location updated successfully.",
+     *   "data": {
+     *     "latitude": 40.712776,
+     *     "longitude": -74.005974,
+     *     "address": "New York, NY, USA",
+     *     "updated_at": "2025-10-01T12:20:15Z"
+     *   }
+     * }
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateLocation(Request $request)
+    {
+        $user = auth('api')->user();
 
-    if (! $user) {
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid or missing access token.',
+            ], 401);
+        }
+
+        $validated = $request->validate([
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'address' => 'required|string|max:255',
+        ]);
+
+        // Parse comma-separated address: "New York, NY, USA" → city, state, country
+        $addressParts = array_map('trim', explode(',', $validated['address']));
+
+        $city = $addressParts[0] ?? null;
+        $state = $addressParts[1] ?? null;
+        $country = $addressParts[2] ?? null;
+
+        // Update user's location fields
+        $user->latitude = $validated['latitude'];
+        $user->longitude = $validated['longitude'];
+        $user->city = $city;
+        $user->state = $state;
+        $user->country = $country;
+        $user->save();
+
         return response()->json([
-            'status'  => 'error',
-            'message' => 'Invalid or missing access token.',
-        ], 401);
+            'status' => 'success',
+            'message' => 'Location updated successfully.',
+            'data' => [
+                'latitude' => (float) $user->latitude,
+                'longitude' => (float) $user->longitude,
+                'address' => $user->location_text,
+                'updated_at' => $user->updated_at?->toIso8601String(),
+            ],
+        ]);
     }
-
-    $validated = $request->validate([
-        'latitude'  => 'required|numeric|between:-90,90',
-        'longitude' => 'required|numeric|between:-180,180',
-        'address'   => 'required|string|max:255',
-    ]);
-
-    // Parse comma-separated address: "New York, NY, USA" → city, state, country
-    $addressParts = array_map('trim', explode(',', $validated['address']));
-
-    $city    = $addressParts[0] ?? null;
-    $state   = $addressParts[1] ?? null;
-    $country = $addressParts[2] ?? null;
-
-    // Update user's location fields
-    $user->latitude   = $validated['latitude'];
-    $user->longitude  = $validated['longitude'];
-    $user->city       = $city;
-    $user->state      = $state;
-    $user->country    = $country;
-    $user->save();
-
-    return response()->json([
-        'status'  => 'success',
-        'message' => 'Location updated successfully.',
-        'data'    => [
-            'latitude'  => (float) $user->latitude,
-            'longitude' => (float) $user->longitude,
-            'address'   => $user->location_text,
-            'updated_at'=> $user->updated_at?->toIso8601String(),
-        ],
-    ]);
-}
-
 
     /**
      * Update User FCM Token API.
@@ -667,5 +720,4 @@ public function updateLocation(Request $request)
             ],
         ]);
     }
-
 }
