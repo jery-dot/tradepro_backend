@@ -26,8 +26,6 @@ class JobPostController extends Controller
 
         // 1. Validate request with new structure
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'company_name' => 'required|string|max:255',
             'skill_ids' => 'required|array|min:1',
             'skill_ids.*' => 'string',
             'specialization' => 'required|array',
@@ -69,8 +67,6 @@ class JobPostController extends Controller
 
         // 4. Create JobPost with new fields
         $jobPost = JobPost::create([
-            'title' => $validated['title'],
-            'company_name' => $validated['company_name'],
             'job_code' => $jobCode,
             'user_id' => $user->id,
             'specialization_id' => $validated['specialization']['id'],
@@ -121,8 +117,7 @@ class JobPostController extends Controller
         $data = $jobs->map(function (JobPost $job) {
             return [
                 'job_id' => $job->job_code,
-                'title' => $job->title ?? 'Carpenter',
-                'company_name' => $job->company_name ?? 'ABC Construction',
+                'title' => $job->specialization->name,
                 'location' => [
                     'city' => $job->city,
                     'state' => $job->state,
@@ -159,8 +154,6 @@ class JobPostController extends Controller
      * Request:
      * {
      *   "job_id": "JOB12345",
-     *   "title": "Carpenter",
-     *   "company_name": "ABC Construction",
      *   "skill_ids": ["skill_001", "skill_002"],
      *   "specialization": { "id": 1, "name": "Carpentry" },
      *   "start_date": "2025-01-10",
@@ -184,8 +177,6 @@ class JobPostController extends Controller
             // 1. Validate request payload
             $validated = $request->validate([
                 'job_id' => 'required|string',
-                'title' => 'required|string|max:255',
-                'company_name' => 'required|string|max:255',
 
                 'skill_ids' => 'required|array|min:1',
                 'skill_ids.*' => 'string',
@@ -246,8 +237,6 @@ class JobPostController extends Controller
 
         // 4. Update job fields
         $jobPost->update([
-            'title' => $validated['title'],
-            'company_name' => $validated['company_name'],
             'specialization_id' => $validated['specialization']['id'],
             'start_date' => $validated['start_date'],
 
@@ -356,10 +345,10 @@ class JobPostController extends Controller
             $validated = $request->validate([
                 'job_id' => 'required|string',
                 // Limit to allowed statuses
-                'status' => 'required|string|in:pending,active,completed,cancelled',
+                'status' => 'required|string|in:pending,completed,not_completed,cancelled',
             ]);
         } catch (ValidationException $e) {
-            return ApiResponse::error('Validation error', 422, $e->errors());
+            return ApiResponse::warning($e->getMessage(), 422);
         }
 
         // Find job by public code
@@ -486,11 +475,7 @@ class JobPostController extends Controller
 
             return [
                 'job_id' => $job->job_code,
-                'title' => $job->title,
-                'company' => [
-                    'name' => $job->company_name,
-                    'rating' => $companyRating,
-                ],
+                'title' => $job->specialization->name,
                 'distance_miles' => isset($job->distance_miles)
                     ? (int) round((float) $job->distance_miles) // your sample uses integers
                     : null,

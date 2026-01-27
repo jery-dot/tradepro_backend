@@ -70,9 +70,13 @@ class ListingController extends Controller
                 'seller' => $owner ? [
                     'user_id' => $owner->id,
                     'name' => $owner->name,
+                    'user_type' => $owner->user_type,
+                    'user_type_label' => $owner->user_type->label(),
+                    'profile_image' => $owner->profile_image,
                     'rating' => $rating,
                     'total_review' => $totalReview,
                 ] : null,
+                'description' => $listing->description,
                 'is_featured' => (bool) $listing->is_featured,
                 'created_at' => $listing->created_at?->toIso8601String(),
             ];
@@ -418,6 +422,9 @@ class ListingController extends Controller
                 'seller' => [
                     'user_id' => $user->id,
                     'name' => $user->name,
+                    'user_type' => $user->user_type,
+                    'user_type_label' => $user->user_type->label(),
+                    'profile_image' => $user->profile_image,
                     'rating' => $rating,
                     'total_review' => $totalReview,
                 ],
