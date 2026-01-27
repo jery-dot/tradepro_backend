@@ -15,6 +15,7 @@ use App\Http\Controllers\V1\ReviewController;
 use App\Http\Controllers\V1\SpecializationController;
 use App\Http\Controllers\V1\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ContactController;
 
 // Public auth routes
 Route::prefix('auth')->controller(AuthController::class)->group(function () {
@@ -149,3 +150,6 @@ Route::middleware('auth:api')->group(function () {
       // update user FCM token
       Route::post('/update_fcm_token', [UserController::class, 'updateFcmToken']);
 });
+
+
+Route::post('/contact/send', [ContactController::class, 'send']);

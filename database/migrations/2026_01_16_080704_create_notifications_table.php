@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');      // owner of the notification
-            $table->string('public_id')->unique();      // e.g. notif_001
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('profile_image_url')->nullable();

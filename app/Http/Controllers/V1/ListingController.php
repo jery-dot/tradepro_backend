@@ -406,7 +406,7 @@ class ListingController extends Controller
                 'price' => (float) $listing->price,
                 'currency' => $listing->currency,
                 'location' => $listing->location_name,
-                'images' => $listing->images->pluck('image_code')->values()->all(),
+                'images' => $listing->images->pluck('path')->values()->all(),
                 'category' => [
                     'id' => $listing->category_id,
                     'name' => $listing->category_name,

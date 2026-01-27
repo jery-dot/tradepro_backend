@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class NotificationController extends Controller
 {
@@ -135,6 +137,87 @@ class NotificationController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function sendNotification(Request $request)
+{
+    // 1. Authorization Check
+    $sender = auth('api')->user();
+    if (! $sender) {
+        return ApiResponse::warning('Invalid or missing access token.', 401);
+    }
+
+    // 2. Validation (Using Validator::make to control the error response format)
+    $validator = Validator::make($request->all(), [
+        'receiver_id'       => 'required',
+        'title'             => 'required|string|max:255',
+        'message'           => 'required|string',
+        'notification_type' => 'required|string|max:50',
+        'image_url'         => 'nullable|url|max:500',
+    ]);
+
+    if ($validator->fails()) {
+        return ApiResponse::error('Validation Error', 422, $validator->errors()->toArray());
+    }
+
+    $validated = $validator->validated();
+
+    // 3. Parse and Find Receiver
+    // $receiverId = $this->parseUserId($validated['receiver_id']);
+    $receiverId = $validated['receiver_id'];
+
+    if (! $receiverId) {
+        return ApiResponse::error('Invalid receiver_id format.', 422);
+    }
+
+    $receiver = User::find($receiverId);
+    if (! $receiver) {
+        return ApiResponse::error('Receiver user not found.', 404);
+    }
+
+    // 4. Save Notification to Database
+    try {
+        $notification = Notification::create([
+            'user_id'           => $receiverId,
+            // 'public_id'         => $publicId,
+            'title'             => $validated['title'],
+            'description'       => $validated['message'],
+            'profile_image_url' => $validated['image_url'] ?? null,
+            'is_read'           => false,
+        ]);
+    } catch (\Exception $e) {
+        return ApiResponse::error('Failed to save notification to database.', 500, ['error' => $e->getMessage()]);
+    }
+
+    // 5. Send FCM Push Notification
+    // We wrap this in a try-catch so that if FCM fails, the API still returns success
+    // (since the notification is saved in the DB).
+    $result = "Empty";
+    if (!empty($receiver->fcm_token)) {
+    $result = "Empty1";
+        try {
+            // Call your existing helper function
+            $result = send_notification_FCM(
+                $receiver->fcm_token,
+                $validated['title'],
+                $validated['message']
+            );
+        } catch (\Exception $e) {
+            Log::error("FCM Send Error for User {$receiverId}: " . $e->getMessage());
+        }
+    }
+
+    // 6. Return Success Response using your Helper
+    $responseData = [
+        'data' => [
+            'receiver_id'       => $validated['receiver_id'],
+            'title'             => $notification->title,
+            'message'           => $notification->description,
+            'notification_type' => $validated['notification_type'],
+            'sent_at'           => $notification->created_at?->toIso8601String(),
+        ]
+    ];
+
+    return ApiResponse::success('Notification sent successfully.', $responseData, 201);
+}
+    public function sendNotificationOld(Request $request)
     {
         $sender = auth('api')->user();
 

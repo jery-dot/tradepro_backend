@@ -23,8 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $this->dropColumn('notification_status');
-            $this->dropColumn('subscription_status');
+            $table->dropColumn('notification_status');
+            $table->dropColumn('subscription_status');
         });
     }
 };
