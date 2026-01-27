@@ -58,7 +58,7 @@ class ListingController extends Controller
                 'price' => (float) $listing->price,
                 'currency' => $listing->currency,
                 'location' => $listing->location_name,
-                'images' => $listing->images->pluck('image_code')->values()->all(),
+                'images' => $listing->images->pluck('path')->values()->all(),
                 'category' => [
                     'id' => $listing->category_id,
                     'name' => $listing->category_name,
@@ -68,7 +68,7 @@ class ListingController extends Controller
                     'name' => $listing->condition_name,
                 ],
                 'seller' => $owner ? [
-                    'user_id' => 'user_'.$owner->id,
+                    'user_id' => $owner->id,
                     'name' => $owner->name,
                     'rating' => $rating,
                     'total_review' => $totalReview,
@@ -416,11 +416,12 @@ class ListingController extends Controller
                     'name' => $listing->condition_name,
                 ],
                 'seller' => [
-                    'user_id' => 'user_'.$user->id,
+                    'user_id' => $user->id,
                     'name' => $user->name,
                     'rating' => $rating,
                     'total_review' => $totalReview,
                 ],
+                'description' => $listing->description,
                 'is_featured' => (bool) $listing->is_featured,
                 'created_at' => $listing->created_at?->toIso8601String(),
             ];
@@ -489,9 +490,9 @@ class ListingController extends Controller
                 'longitude' => $listing->longitude,
             ],
             'description' => $listing->description,
-            'images' => $listing->images->pluck('image_code')->values()->all(),
+            'images' => $listing->images->pluck('path')->values()->all(),
             'seller' => $owner ? [
-                'user_id' => 'user_'.$owner->id,
+                'user_id' => $owner->id,
                 'name' => $owner->name,
                 'rating' => $rating,
             ] : null,
