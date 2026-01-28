@@ -10,7 +10,6 @@ class Opportunity extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'public_id',
         'apprenticeship_id',
         'user_id',
         'skills_needed',

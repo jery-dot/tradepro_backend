@@ -42,7 +42,6 @@ class OpportunityController extends Controller
         $location = $validated['location'];
 
         $opportunity = Opportunity::create([
-            'public_id' => 'opportunity_'.str_pad((string) (Opportunity::max('id') + 1), 3, '0', STR_PAD_LEFT),
             'apprenticeship_id' => 'APP-'.random_int(10000, 99999),
             'user_id' => $user->id,
             'skills_needed' => $skills,
@@ -141,7 +140,7 @@ class OpportunityController extends Controller
         $user = auth('api')->user();
 
         $validated = $request->validate([
-            'id' => 'required|string',
+            'id' => 'required',
             'skills_needed' => 'nullable|array|min:1',
             'skills_needed.*' => 'string|max:255',
             'apprenticeship_start_date' => 'nullable|date',
@@ -155,7 +154,7 @@ class OpportunityController extends Controller
             'apprenticeship_description' => 'nullable|string',
         ]);
 
-        $opportunity = Opportunity::where('public_id', $validated['id'])->first();
+        $opportunity = Opportunity::where('id', $validated['id'])->first();
 
         if (! $opportunity) {
             return response()->json([
@@ -251,10 +250,10 @@ class OpportunityController extends Controller
     $user = auth('api')->user();
 
     $validated = $request->validate([
-        'id' => 'required|string',
+        'id' => 'required',
     ]);
 
-    $opportunity = Opportunity::where('public_id', $validated['id'])->first();
+    $opportunity = Opportunity::where('id', $validated['id'])->first();
 
     if (! $opportunity) {
         return response()->json([
