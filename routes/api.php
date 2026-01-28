@@ -91,6 +91,7 @@ Route::middleware('auth:api')->group(function () {
     Route::controller(OpportunityController::class)->group(function () {
         Route::post('/post_opportunity', 'postOpportunity');
         Route::get('/get_opportunities', 'getOpportunities');
+        Route::get('/my_opportunities', 'myOpportunities');
         Route::post('/edit_opportunity', 'editOpportunity');
         Route::post('/delete_opportunity', 'deleteOpportunity');
     });
