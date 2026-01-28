@@ -10,7 +10,6 @@ class ApprenticeProfile extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'public_id',
         'user_id',
         'position_seeking',
         'age',

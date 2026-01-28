@@ -48,7 +48,6 @@ class ApprenticeProfileController extends Controller
         $publicId = 'apprentice_'.str_pad((string) $nextNumericId, 3, '0', STR_PAD_LEFT);
 
         $profile = ApprenticeProfile::create([
-            'public_id' => $publicId,
             'user_id' => $user->id,
             'position_seeking' => $validated['position_seeking'],
             'age' => $validated['age'],
@@ -66,7 +65,7 @@ class ApprenticeProfileController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Apprentice profile created successfully.',
-            'profile_id' => $profile->public_id,
+            'profile_id' => $profile->id,
             'created_at' => $profile->created_at?->toIso8601String(),
             'data' => [
                 'position_seeking' => $profile->position_seeking,
@@ -95,7 +94,7 @@ class ApprenticeProfileController extends Controller
         $user = auth('api')->user();
 
         $validated = $request->validate([
-            'id' => 'required|string',
+            'id' => 'required',
             'position_seeking' => 'nullable|string|max:255',
             'age' => 'nullable|integer|min:14|max:100',
             'location' => 'nullable|string|max:255',
@@ -106,7 +105,7 @@ class ApprenticeProfileController extends Controller
             'profile_visible' => 'nullable|boolean',
         ]);
 
-        $profile = ApprenticeProfile::where('public_id', $validated['id'])->first();
+        $profile = ApprenticeProfile::where('id', $validated['id'])->first();
 
         if (! $profile) {
             return response()->json([
@@ -160,7 +159,7 @@ class ApprenticeProfileController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Apprentice profile updated successfully.',
-            'id' => $profile->public_id,
+            'id' => $profile->id,
             'updated_at' => $profile->updated_at?->toIso8601String(),
             'data' => [
                 'position_seeking' => $profile->position_seeking,
@@ -202,7 +201,7 @@ class ApprenticeProfileController extends Controller
             'status' => 'success',
             'message' => 'Apprentice profile fetched successfully.',
             'data' => [
-                'id' => $profile->public_id,
+                'id' => $profile->id,
                 'position_seeking' => $profile->position_seeking,
                 'age' => $profile->age,
                 'location' => $location,
@@ -226,10 +225,10 @@ class ApprenticeProfileController extends Controller
         $user = auth('api')->user();
 
         $validated = $request->validate([
-            'id' => 'required|string',
+            'id' => 'required',
         ]);
 
-        $profile = ApprenticeProfile::where('public_id', $validated['id'])->first();
+        $profile = ApprenticeProfile::where('id', $validated['id'])->first();
 
         if (! $profile) {
             return response()->json([
@@ -279,7 +278,7 @@ class ApprenticeProfileController extends Controller
             $user = $profile->user;
 
             return [
-                'id' => $profile->public_id,
+                'id' => $profile->id,
                 'full_name' => $user?->name,
                 'profile_image_url' => $user?->profile_image,
                 'position_seeking' => $profile->position_seeking,
