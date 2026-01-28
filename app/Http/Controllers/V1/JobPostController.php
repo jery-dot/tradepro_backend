@@ -118,10 +118,13 @@ class JobPostController extends Controller
             return [
                 'job_id' => $job->job_code,
                 'title' => $job->specialization->name,
+                'description' => $job->job_description,
                 'location' => [
                     'city' => $job->city,
                     'state' => $job->state,
                     'country' => $job->country,
+                    'latitude' => $job->location_lat,
+                    'longitude' => $job->location_lng,
                 ],
                 'is_featured' => (bool) $job->is_featured,
                 'pay_rate' => [
@@ -135,6 +138,11 @@ class JobPostController extends Controller
                 ],
                 'start_date' => optional($job->start_date)->toDateString(),
                 'job_status' => $job->status,
+                'created_at' => $job->created_at->toDateTimeString(),
+                'updated_at' => $job->updated_at->toDateTimeString(),
+                'specialization' => $job->specialization,
+                'skills' => $job->skills,
+                'owner' => $job->owner
             ];
         })->values()->all(); // map() is the usual way to transform models into custom JSON for APIs.[web:394][web:388]
 
@@ -476,6 +484,14 @@ class JobPostController extends Controller
             return [
                 'job_id' => $job->job_code,
                 'title' => $job->specialization->name,
+                'description' => $job->job_description,
+                'location' => [
+                    'city' => $job->city,
+                    'state' => $job->state,
+                    'country' => $job->country,
+                    'latitude' => $job->location_lat,
+                    'longitude' => $job->location_lng,
+                ],
                 'distance_miles' => isset($job->distance_miles)
                     ? (int) round((float) $job->distance_miles) // your sample uses integers
                     : null,
@@ -490,6 +506,11 @@ class JobPostController extends Controller
                 'start_date' => optional($job->start_date)->toDateString(),
                 'is_featured' => (bool) $job->is_featured,
                 'quick_apply' => true, // or drive from a column/flag if you add one
+                'created_at' => $job->created_at->toDateTimeString(),
+                'updated_at' => $job->updated_at->toDateTimeString(),
+                'specialization' => $job->specialization,
+                'skills' => $job->skills,
+                'owner' => $job->owner
             ];
         })->values()->all(); // mapping via collection is idiomatic for API responses.[web:29][web:375]
         $data = [

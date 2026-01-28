@@ -102,7 +102,7 @@ class OpportunityController extends Controller
             $canEditDelete = $owner && $owner->id === $user->id;
 
             return [
-                'id' => $opportunity->public_id,
+                'id' => $opportunity->id,
                 'apprenticeship_id' => $opportunity->apprenticeship_id,
                 'title' => $opportunity->title ?? ($opportunity->skills_needed[0] ?? null),
                 'posted_by' => $owner?->name,
@@ -223,7 +223,7 @@ class OpportunityController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Apprenticeship form updated successfully.',
-            'id' => $opportunity->public_id,
+            'id' => $opportunity->id,
             'apprenticeship_id' => $opportunity->apprenticeship_id,
             'updated_at' => now()->toIso8601String(),
             'data' => [
@@ -275,7 +275,7 @@ class OpportunityController extends Controller
     return response()->json([
         'status'     => 'success',
         'message'    => 'Apprenticeship opportunity deleted successfully.',
-        'id'         => $opportunity->public_id,
+        'id'         => $opportunity->id,
         'deleted_at' => now()->toIso8601String(),
     ]);
 }
