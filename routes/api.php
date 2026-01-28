@@ -102,7 +102,7 @@ Route::middleware('auth:api')->group(function () {
         Route::middleware('worker')->group(function () {
             Route::post('/create_apprentice_profile', 'createApprenticeProfile');
             Route::post('/edit_apprentice_profile', 'editApprenticeProfile');
-            Route::get('/get_apprentice_profile', 'getApprenticeProfile');
+            Route::get('/get_op_apprentice_profile', 'getApprenticeProfile');
             Route::post('/delete_apprentice_profile', 'deleteApprenticeProfile');
         });
 
