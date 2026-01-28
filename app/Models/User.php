@@ -146,4 +146,7 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
+    public function opportunities(){
+        return $this->hasMany(Opportunity::class);
+    }
 }

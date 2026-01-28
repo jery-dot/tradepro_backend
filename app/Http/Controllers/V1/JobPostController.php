@@ -142,7 +142,7 @@ class JobPostController extends Controller
                 'updated_at' => $job->updated_at->toDateTimeString(),
                 'specialization' => $job->specialization,
                 'skills' => $job->skills,
-                'owner' => $job->owner
+                'owner' => $job->owner,
             ];
         })->values()->all(); // map() is the usual way to transform models into custom JSON for APIs.[web:394][web:388]
 
@@ -425,51 +425,61 @@ class JobPostController extends Controller
         $radius = $validated['search_radius_miles'] ?? 25;
         $query = JobPost::query()
             ->with('owner');
-            // ->where('status', 'active'); // base filter.
+        // ->where('status', 'active'); // base filter.
 
         if ($skill) {
-            $query->where('title', 'like', '%'.$skill.'%');
+            $query->where(function ($q) use ($skill) {
+                $q->where('title', 'like', '%'.$skill.'%')
+                    ->orWhereHas('specialization', function ($specializationQuery) use ($skill) {
+                        $specializationQuery->where('name', 'like', '%'.$skill.'%');
+                    })
+                    ->orWhereHas('skills', function ($skillsQuery) use ($skill) {
+                        $skillsQuery->where('name', 'like', '%'.$skill.'%')
+                            ->orWhere('code', 'like', '%'.$skill.'%')
+                            ->orWhere('slug', 'like', '%'.$skill.'%');
+                    });
+            });
         }
 
         if ($availabilityToday) {
             $query->whereHas('owner', function ($q) {
-                $q->where('available_today', true);
+                $q->where('available_today', 1);
             });
         }
 
         // Location + radius (Haversine in miles)
-        if ($lat !== null && $lng !== null) {
-            $haversine = '(3959 * acos(
-            cos(radians(?)) * cos(radians(location_lat)) *
-            cos(radians(location_lng) - radians(?)) +
-            sin(radians(?)) * sin(radians(location_lat))
-        ))'; // standard great‑circle distance formula.[web:442][web:437]
+        // if ($lat !== null && $lng !== null) {
+        //     $haversine = '(3959 * acos(
+        //         cos(radians(?)) * cos(radians(location_lat)) *
+        //         cos(radians(location_lng) - radians(?)) +
+        //         sin(radians(?)) * sin(radians(location_lat))
+        //     ))'; // standard great‑circle distance formula
 
-            $query->select('*')
-                ->selectRaw("$haversine AS distance_miles", [$lat, $lng, $lat])
-                ->having('distance_miles', '<=', $radius)
-                ->orderBy('distance_miles');
-        }
+        //     $query->select('*')
+        //         ->selectRaw("$haversine AS distance_miles", [$lat, $lng, $lat])
+        //         ->having('distance_miles', '<=', $radius)
+        //         ->orderBy('distance_miles');
+        // }
 
         // Filters
-        if (! empty($filters['start_date'])) {
-            $query->whereDate('start_date', '>=', $filters['start_date']);
-        }
+        // if (! empty($filters['start_date'])) {
+        //     $query->whereDate('start_date', '>=', $filters['start_date']);
+        // }
 
-        if (! empty($filters['duration_months'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->where('duration_unit', 'months')
-                    ->where('duration_value', '>=', $filters['duration_months']);
-            });
-        }
+        // if (! empty($filters['duration_months'])) {
+        //     $query->where(function ($q) use ($filters) {
+        //         $q->where('duration_unit', 'months')
+        //             ->where('duration_value', '>=', $filters['duration_months']);
+        //     });
+        // }
 
-        if (! empty($filters['minimum_pay_rate'])) {
-            $query->where('pay_rate_amount', '>=', $filters['minimum_pay_rate']);
-        }
+        // if (! empty($filters['minimum_pay_rate'])) {
+        //     $query->where('pay_rate_amount', '>=', $filters['minimum_pay_rate']);
+        // }
 
-        if (! empty($filters['pay_unit'])) {
-            $query->where('pay_rate_type', $filters['pay_unit']);
-        }
+        // if (! empty($filters['pay_unit'])) {
+        //     $query->where('pay_rate_type', $filters['pay_unit']);
+        // }
 
         $paginator = $query->paginate($limit, ['*'], 'page', $page); // custom page & per page.[web:296][web:470]
 
@@ -510,7 +520,7 @@ class JobPostController extends Controller
                 'updated_at' => $job->updated_at->toDateTimeString(),
                 'specialization' => $job->specialization,
                 'skills' => $job->skills,
-                'owner' => $job->owner
+                'owner' => $job->owner,
             ];
         })->values()->all(); // mapping via collection is idiomatic for API responses.[web:29][web:375]
         $data = [
