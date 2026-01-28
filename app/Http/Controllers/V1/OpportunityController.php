@@ -130,58 +130,75 @@ class OpportunityController extends Controller
             'data' => $items,
         ]);
     }
+    
+/**
+ * GET /api/my_opportunities?page=&limit=
+ *
+ * My opportunities (posted by authenticated user).
+ * Only contractors/subcontractors (user_type 0,1) can access.
+ *
+ * @param  \Illuminate\Http\Request  $request
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function myOpportunities(Request $request)
+{
+    $user = auth('api')->user();
 
-    /**
-     * GET /api/get_opportunities?page=&limit=
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function myOpportunities(Request $request)
-    {
-        $user = auth('api')->user();
-
-        // Only contractors and subcontractors can post opportunities
-        if (($user->user_type !== UserType::CONTRACTOR) && ($user->user_type !== UserType::SUBCONTRACTOR)) {
-            return ApiResponse::warning('Unauthorized', 403);
-        }
-
-        $paginator = Opportunity::where('user_id', $user->id)->with('user')
-            ->latest();
-
-        $items = $paginator->getCollection()->map(function (Opportunity $opportunity) use ($user) {
-            $owner = $opportunity->user;
-
-            $canEditDelete = $owner && $owner->id === $user->id;
-
-            return [
-                'id' => $opportunity->id,
-                'apprenticeship_id' => $opportunity->apprenticeship_id,
-                'title' => $opportunity->title ?? ($opportunity->skills_needed[0] ?? null),
-                'posted_by' => $owner?->name,
-                'location' => [
-                    'lat' => (float) $opportunity->lat,
-                    'lng' => (float) $opportunity->lng,
-                    'city' => $opportunity->city,
-                ],
-                'compensation_paid' => $opportunity->compensation_paid,
-                'total_pay_offering' => $opportunity->total_pay_offering,
-                'duration_weeks' => $opportunity->duration_weeks,
-                'apprenticeship_start_date' => optional($opportunity->apprenticeship_start_date)->toDateString(),
-                'skills_needed' => $opportunity->skills_needed ?? [],
-                'apprenticeship_description' => $opportunity->apprenticeship_description,
-                'created_at' => $opportunity->created_at?->toIso8601String(),
-                'edit_available' => $canEditDelete,
-                'delete_available' => $canEditDelete,
-            ];
-        })->values()->all(); // map() for transforming Eloquent collections into API resources.
-
+    // Only contractors and subcontractors can post opportunities
+    if (! in_array($user->user_type->value, [UserType::CONTRACTOR->value, UserType::SUBCONTRACTOR->value])) {
         return response()->json([
-            'status' => 'success',
-            'message' => 'Opportunities fetched successfully.',
-            'count' => count($items),
-            'data' => $items,
-        ]);
+            'status'  => 'error',
+            'message' => 'Unauthorized',
+        ], 403);
     }
+
+    $page  = $request->query('page', 1);
+    $limit = $request->query('limit', 10);
+    $limit = $limit > 0 ? min($limit, 100) : 10;
+
+    $paginator = Opportunity::where('user_id', $user->id)
+        ->with('user:id,name,profile_image') // only needed owner fields
+        ->latest()
+        ->paginate($limit, ['*'], 'page', $page);
+
+    $items = $paginator->getCollection()->map(function (Opportunity $opportunity) use ($user) {
+        $owner = $opportunity->user;
+
+        // Ownership already guaranteed by where('user_id', $user->id)
+        $canEditDelete = true;
+
+        return [
+            'id' => $opportunity->id,
+            'apprenticeship_id' => $opportunity->apprenticeship_id,
+            'title' => $opportunity->title ?? ($opportunity->skills_needed[0] ?? null),
+            'posted_by' => $owner?->name,
+            'location' => [
+                'lat' => (float) $opportunity->lat,
+                'lng' => (float) $opportunity->lng,
+                'city' => $opportunity->city,
+            ],
+            'compensation_paid' => $opportunity->compensation_paid,
+            'total_pay_offering' => $opportunity->total_pay_offering,
+            'duration_weeks' => $opportunity->duration_weeks,
+            'apprenticeship_start_date' => optional($opportunity->apprenticeship_start_date)->toDateString(),
+            'skills_needed' => $opportunity->skills_needed ?? [],
+            'apprenticeship_description' => $opportunity->apprenticeship_description,
+            'created_at' => $opportunity->created_at?->toIso8601String(),
+            'edit_available' => $canEditDelete,
+            'delete_available' => $canEditDelete,
+        ];
+    })->values()->all();
+
+    return response()->json([
+        'status'        => 'success',
+        'message'       => 'Opportunities fetched successfully.',
+        'total_results' => $paginator->total(),
+        'current_page'  => $paginator->currentPage(),
+        'per_page'      => $paginator->perPage(),
+        'count'         => count($items),
+        'data'          => $items,
+    ]);
+}
 
     /**
      * POST /api/edit_opportunity
