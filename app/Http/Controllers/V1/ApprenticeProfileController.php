@@ -151,11 +151,14 @@ class ApprenticeProfileController extends Controller
             $profile->profile_visible = $validated['profile_visible'];
         }
 
+        $oldResume = $profile->resume_file_url;
+
         // New resume upload (overwrite URL)
-        if ($request->hasFile('resume_file')) {
+        if ($request->hasFile('resume_file_url')) {
             $resumeUrl = FileUploadHelper::upload(
-                $request->file('resume_file'),
-                'resumes/apprentices'
+                $request->file('resume_file_url'),
+                'resumes/apprentices',
+                $oldResume
             ); // Delegate storage concerns to the helper for consistency.[web:100][web:111]
 
             $profile->resume_file_url = $resumeUrl;
