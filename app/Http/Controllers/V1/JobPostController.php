@@ -491,6 +491,7 @@ class JobPostController extends Controller
                 ? round($owner->receivedReviews()->avg('overall_rating') ?? 0, 1)
                 : 0.0; // average rating for the company.[web:433][web:436]
 
+                $owner->ratting = $companyRating;
             return [
                 'job_id' => $job->job_code,
                 'title' => $job->specialization->name,
