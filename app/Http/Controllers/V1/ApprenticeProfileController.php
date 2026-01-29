@@ -97,7 +97,10 @@ class ApprenticeProfileController extends Controller
             'id' => 'required',
             'position_seeking' => 'nullable|string|max:255',
             'age' => 'nullable|integer|min:14|max:100',
-            'location' => 'nullable|string|max:255',
+            'location' => 'required|array',
+            'location.lat' => 'required|numeric|between:-90,90',
+            'location.lng' => 'required|numeric|between:-180,180',
+            'location.city' => 'required|string|max:255',
             'education_experience' => 'nullable|string|max:255',
             'trade_school' => 'nullable|string|max:255',
             'about_me' => 'nullable|string',
@@ -121,6 +124,8 @@ class ApprenticeProfileController extends Controller
             ], 403);
         }
 
+        $location = $validated['location'];
+
         // Partial field updates
         if (array_key_exists('position_seeking', $validated)) {
             $profile->position_seeking = $validated['position_seeking'];
@@ -129,7 +134,9 @@ class ApprenticeProfileController extends Controller
             $profile->age = $validated['age'];
         }
         if (array_key_exists('location', $validated)) {
-            $profile->location_text = $validated['location'];
+            $profile->lat = $location['lat'];
+            $profile->lng = $location['lng'];
+            $profile->city = $location['city'];
         }
         if (array_key_exists('education_experience', $validated)) {
             $profile->education_experience = $validated['education_experience'];
