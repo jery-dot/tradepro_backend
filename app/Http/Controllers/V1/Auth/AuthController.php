@@ -37,6 +37,7 @@ class AuthController extends Controller
                 'location' => 'nullable|array',
                 'location.latitude' => 'nullable|numeric|between:-90,90',
                 'location.longitude' => 'nullable|numeric|between:-180,180',
+                'fcm_token' => 'nullable|string',
             ]);
         } catch (ValidationException $e) {
 
@@ -67,8 +68,14 @@ class AuthController extends Controller
             // 'user_type' => $validated['user_type'],
             'latitude' => $location['latitude'],
             'longitude' => $location['longitude'],
-            // 'name' can be filled later by profile update endpoint
         ]);
+
+        // Update the user's FCM token if provided
+        if ($request->filled('fcm_token')) {
+            $user->update([
+                'fcm_token' => $validated['fcm_token'],
+            ]);
+        }
 
         // -------------------------------------------------------------
         // 4. Generate JWT token for the new user
@@ -108,6 +115,7 @@ class AuthController extends Controller
             'location.latitude' => 'nullable|numeric|between:-90,90',
             'location.longitude' => 'nullable|numeric|between:-180,180',
             'available_today' => 'nullable|boolean',
+            'fcm_token' => 'nullable|string'
         ]); // Nested validation via dot-notation for JSON objects is standard in Laravel.
 
         // 2. Attempt auth
@@ -135,6 +143,13 @@ class AuthController extends Controller
         if ($request->filled(['available_today'])) {
             $user->update([
                 'available_today' => $request->input('available_today'),
+            ]);
+        }
+
+        // Update the user's FCM token if provided
+        if ($request->filled('fcm_token')) {
+            $user->update([
+                'fcm_token' => $validated['fcm_token'],
             ]);
         }
 

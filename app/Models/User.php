@@ -27,6 +27,7 @@ class User extends Authenticatable implements JWTSubject
         'status',
         'available_today',
         'profile_image',
+        'fcm_token',
     ];
 
     protected $hidden = [
