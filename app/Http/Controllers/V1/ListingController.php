@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Enums\UserType;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Listing;
 use App\Models\ListingImage;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -195,6 +197,30 @@ class ListingController extends Controller
                 'status' => $listing->status,
                 'created_at' => $listing->created_at?->toIso8601String(),
             ];
+
+        // Get the list of other users, except the current user
+        $receivers = User::whereNot('id', $user->id)->get();
+
+        // Send FCM Push Notification
+        // We wrap this in a try-catch so that if FCM fails, the API still returns success
+        // (since the notification is saved in the DB).
+        foreach ($receivers as $receiver) {
+            if (! empty($receiver->fcm_token)) {
+                $receiverId = $receiver->id;
+                try {
+                    // Call your existing helper function
+                    send_notification_FCM(
+                        $receiver->fcm_token,
+                        'New Product Listing',
+                        "A new product listing has been posted."
+                    );
+                } catch (\Exception $e) {
+                    Log::error("FCM Send Error for User {$receiverId}: ".$e->getMessage());
+                }
+            }
+
+        }
+
 
             return ApiResponse::success('Listing created successfully', ['data' => $data]);
         });

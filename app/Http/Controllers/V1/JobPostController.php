@@ -7,6 +7,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\JobPost;
 use App\Models\Skill;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -94,6 +95,29 @@ class JobPostController extends Controller
             'job_id' => $jobPost->job_code,
             'job_status' => $jobPost->status,
         ];
+
+        // Get the Apprentice and Llaborer users
+        $receivers = User::whereIn('user_type', [UserType::APPRENTICE, UserType::LABORER])->get();
+
+        // Send FCM Push Notification
+        // We wrap this in a try-catch so that if FCM fails, the API still returns success
+        // (since the notification is saved in the DB).
+        foreach ($receivers as $receiver) {
+            if (! empty($receiver->fcm_token)) {
+                $receiverId = $receiver->id;
+                try {
+                    // Call your existing helper function
+                    send_notification_FCM(
+                        $receiver->fcm_token,
+                        'New Job Post',
+                        "A new job post has been created."
+                    );
+                } catch (\Exception $e) {
+                    Log::error("FCM Send Error for User {$receiverId}: ".$e->getMessage());
+                }
+            }
+        
+        }
 
         return ApiResponse::success('Job posted successfully', [
             'data' => $data,

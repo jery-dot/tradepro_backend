@@ -6,6 +6,7 @@ use App\Enums\UserType;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Opportunity;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class OpportunityController extends Controller
@@ -76,6 +77,30 @@ class OpportunityController extends Controller
             ],
         ];
 
+
+        // Get the Apprentice and Llaborer users
+        $receivers = User::whereIn('user_type', [UserType::APPRENTICE, UserType::LABORER])->get();
+
+        // Send FCM Push Notification
+        // We wrap this in a try-catch so that if FCM fails, the API still returns success
+        // (since the notification is saved in the DB).
+        foreach ($receivers as $receiver) {
+            if (! empty($receiver->fcm_token)) {
+                $receiverId = $receiver->id;
+                try {
+                    // Call your existing helper function
+                    send_notification_FCM(
+                        $receiver->fcm_token,
+                        'New Opportunity Posted',
+                        "A new apprenticeship opportunity has been posted."
+                    );
+                } catch (\Exception $e) {
+                    Log::error("FCM Send Error for User {$receiverId}: ".$e->getMessage());
+                }
+            }
+
+        }
+
         return response()->json($responseData, 201);
     }
 
@@ -119,7 +144,7 @@ class OpportunityController extends Controller
                 'created_at' => $opportunity->created_at?->toIso8601String(),
                 'edit_available' => $canEditDelete,
                 'delete_available' => $canEditDelete,
-                'owner' => $opportunity->user
+                'owner' => $opportunity->user,
             ];
         })->values()->all(); // map() for transforming Eloquent collections into API resources.
 
@@ -130,75 +155,74 @@ class OpportunityController extends Controller
             'data' => $items,
         ]);
     }
-    
-/**
- * GET /api/my_opportunities?page=&limit=
- *
- * My opportunities (posted by authenticated user).
- * Only contractors/subcontractors (user_type 0,1) can access.
- *
- * @param  \Illuminate\Http\Request  $request
- * @return \Illuminate\Http\JsonResponse
- */
-public function myOpportunities(Request $request)
-{
-    $user = auth('api')->user();
 
-    // Only contractors and subcontractors can post opportunities
-    if (! in_array($user->user_type->value, [UserType::CONTRACTOR->value, UserType::SUBCONTRACTOR->value])) {
+    /**
+     * GET /api/my_opportunities?page=&limit=
+     *
+     * My opportunities (posted by authenticated user).
+     * Only contractors/subcontractors (user_type 0,1) can access.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function myOpportunities(Request $request)
+    {
+        $user = auth('api')->user();
+
+        // Only contractors and subcontractors can post opportunities
+        if (! in_array($user->user_type->value, [UserType::CONTRACTOR->value, UserType::SUBCONTRACTOR->value])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $page = $request->query('page', 1);
+        $limit = $request->query('limit', 10);
+        $limit = $limit > 0 ? min($limit, 100) : 10;
+
+        $paginator = Opportunity::where('user_id', $user->id)
+            ->with('user:id,name,profile_image') // only needed owner fields
+            ->latest()
+            ->paginate($limit, ['*'], 'page', $page);
+
+        $items = $paginator->getCollection()->map(function (Opportunity $opportunity) {
+            $owner = $opportunity->user;
+
+            // Ownership already guaranteed by where('user_id', $user->id)
+            $canEditDelete = true;
+
+            return [
+                'id' => $opportunity->id,
+                'apprenticeship_id' => $opportunity->apprenticeship_id,
+                'title' => $opportunity->title ?? ($opportunity->skills_needed[0] ?? null),
+                'posted_by' => $owner?->name,
+                'location' => [
+                    'lat' => (float) $opportunity->lat,
+                    'lng' => (float) $opportunity->lng,
+                    'city' => $opportunity->city,
+                ],
+                'compensation_paid' => $opportunity->compensation_paid,
+                'total_pay_offering' => $opportunity->total_pay_offering,
+                'duration_weeks' => $opportunity->duration_weeks,
+                'apprenticeship_start_date' => optional($opportunity->apprenticeship_start_date)->toDateString(),
+                'skills_needed' => $opportunity->skills_needed ?? [],
+                'apprenticeship_description' => $opportunity->apprenticeship_description,
+                'created_at' => $opportunity->created_at?->toIso8601String(),
+                'edit_available' => $canEditDelete,
+                'delete_available' => $canEditDelete,
+            ];
+        })->values()->all();
+
         return response()->json([
-            'status'  => 'error',
-            'message' => 'Unauthorized',
-        ], 403);
+            'status' => 'success',
+            'message' => 'Opportunities fetched successfully.',
+            'total_results' => $paginator->total(),
+            'current_page' => $paginator->currentPage(),
+            'per_page' => $paginator->perPage(),
+            'count' => count($items),
+            'data' => $items,
+        ]);
     }
-
-    $page  = $request->query('page', 1);
-    $limit = $request->query('limit', 10);
-    $limit = $limit > 0 ? min($limit, 100) : 10;
-
-    $paginator = Opportunity::where('user_id', $user->id)
-        ->with('user:id,name,profile_image') // only needed owner fields
-        ->latest()
-        ->paginate($limit, ['*'], 'page', $page);
-
-    $items = $paginator->getCollection()->map(function (Opportunity $opportunity) use ($user) {
-        $owner = $opportunity->user;
-
-        // Ownership already guaranteed by where('user_id', $user->id)
-        $canEditDelete = true;
-
-        return [
-            'id' => $opportunity->id,
-            'apprenticeship_id' => $opportunity->apprenticeship_id,
-            'title' => $opportunity->title ?? ($opportunity->skills_needed[0] ?? null),
-            'posted_by' => $owner?->name,
-            'location' => [
-                'lat' => (float) $opportunity->lat,
-                'lng' => (float) $opportunity->lng,
-                'city' => $opportunity->city,
-            ],
-            'compensation_paid' => $opportunity->compensation_paid,
-            'total_pay_offering' => $opportunity->total_pay_offering,
-            'duration_weeks' => $opportunity->duration_weeks,
-            'apprenticeship_start_date' => optional($opportunity->apprenticeship_start_date)->toDateString(),
-            'skills_needed' => $opportunity->skills_needed ?? [],
-            'apprenticeship_description' => $opportunity->apprenticeship_description,
-            'created_at' => $opportunity->created_at?->toIso8601String(),
-            'edit_available' => $canEditDelete,
-            'delete_available' => $canEditDelete,
-        ];
-    })->values()->all();
-
-    return response()->json([
-        'status'        => 'success',
-        'message'       => 'Opportunities fetched successfully.',
-        'total_results' => $paginator->total(),
-        'current_page'  => $paginator->currentPage(),
-        'per_page'      => $paginator->perPage(),
-        'count'         => count($items),
-        'data'          => $items,
-    ]);
-}
 
     /**
      * POST /api/edit_opportunity
@@ -311,42 +335,40 @@ public function myOpportunities(Request $request)
         ]);
     }
 
-
     /**
      * POST /api/delete_opportunity
      */
     public function deleteOpportunity(Request $request)
-{
-    $user = auth('api')->user();
+    {
+        $user = auth('api')->user();
 
-    $validated = $request->validate([
-        'id' => 'required',
-    ]);
+        $validated = $request->validate([
+            'id' => 'required',
+        ]);
 
-    $opportunity = Opportunity::where('id', $validated['id'])->first();
+        $opportunity = Opportunity::where('id', $validated['id'])->first();
 
-    if (! $opportunity) {
+        if (! $opportunity) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Opportunity not found.',
+            ], 404);
+        }
+
+        if ($opportunity->user_id !== $user->id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        $opportunity->delete(); // sets deleted_at thanks to SoftDeletes.[web:13][web:68]
+
         return response()->json([
-            'status'  => 'error',
-            'message' => 'Opportunity not found.',
-        ], 404);
+            'status' => 'success',
+            'message' => 'Apprenticeship opportunity deleted successfully.',
+            'id' => $opportunity->id,
+            'deleted_at' => now()->toIso8601String(),
+        ]);
     }
-
-    if ($opportunity->user_id !== $user->id) {
-        return response()->json([
-            'status'  => 'error',
-            'message' => 'Unauthorized.',
-        ], 403);
-    }
-
-    $opportunity->delete(); // sets deleted_at thanks to SoftDeletes.[web:13][web:68]
-
-    return response()->json([
-        'status'     => 'success',
-        'message'    => 'Apprenticeship opportunity deleted successfully.',
-        'id'         => $opportunity->id,
-        'deleted_at' => now()->toIso8601String(),
-    ]);
-}
-
 }

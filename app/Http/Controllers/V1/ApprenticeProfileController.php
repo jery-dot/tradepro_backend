@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Enums\UserType;
 use App\Helpers\FileUploadHelper;
 use App\Http\Controllers\Controller;
 use App\Models\ApprenticeProfile;
+use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 
@@ -61,6 +63,30 @@ class ApprenticeProfileController extends Controller
             'resume_file_url' => $resumeUrl,
             'profile_visible' => $validated['profile_visible'],
         ]);
+
+
+        // Get the Apprentice and Llaborer users
+        $receivers = User::whereIn('user_type', [UserType::CONTRACTOR, UserType::SUBCONTRACTOR])->get();
+
+        // Send FCM Push Notification
+        // We wrap this in a try-catch so that if FCM fails, the API still returns success
+        // (since the notification is saved in the DB).
+        foreach ($receivers as $receiver) {
+            if (! empty($receiver->fcm_token)) {
+                $receiverId = $receiver->id;
+                try {
+                    // Call your existing helper function
+                    send_notification_FCM(
+                        $receiver->fcm_token,
+                        'New Apprenticeship Profile',
+                        "A new apprentice profile has been created."
+                    );
+                } catch (\Exception $e) {
+                    Log::error("FCM Send Error for User {$receiverId}: ".$e->getMessage());
+                }
+            }
+
+        }
 
         return response()->json([
             'status' => 'success',
