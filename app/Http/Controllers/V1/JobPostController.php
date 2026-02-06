@@ -124,7 +124,8 @@ class JobPostController extends Controller
 
         return ApiResponse::success('Job posted successfully', [
             'data' => $data,
-            'fcm_result' => $result
+            'fcm_result' => $result,
+            'receivers' => $receivers,
         ]);
     }
 
