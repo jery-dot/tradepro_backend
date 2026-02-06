@@ -120,7 +120,6 @@ class JobPostController extends Controller
             }
 
         }
-        $result = "nothing happen";
 
         return ApiResponse::success('Job posted successfully', [
             'data' => $data,
