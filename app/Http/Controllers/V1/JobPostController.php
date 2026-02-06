@@ -108,7 +108,7 @@ class JobPostController extends Controller
                 $receiverId = $receiver->id;
                 try {
                     // Call your existing helper function
-                    send_notification_FCM(
+                    $result = send_notification_FCM(
                         $receiver->fcm_token,
                         'New Job Post',
                         "A new job post has been created."
@@ -122,6 +122,7 @@ class JobPostController extends Controller
 
         return ApiResponse::success('Job posted successfully', [
             'data' => $data,
+            'fcm_result' => $result
         ]);
     }
 
