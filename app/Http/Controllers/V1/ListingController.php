@@ -200,27 +200,29 @@ class ListingController extends Controller
             ];
 
         // Get the list of other users, except the current user
-        $receivers = User::whereNot('id', $user->id)->get();
+        // $receivers = User::whereNot('id', $user->id)->get();
 
         // Send FCM Push Notification
         // We wrap this in a try-catch so that if FCM fails, the API still returns success
         // (since the notification is saved in the DB).
-        foreach ($receivers as $receiver) {
-            if (! empty($receiver->fcm_token)) {
-                $receiverId = $receiver->id;
+
+        User::whereNot('id', $user->id)
+        ->whereNotNull('fcm_token')
+        ->chunk(100, function ($receivers) use (&$sendCount) {
+            foreach ($receivers as $receiver) {
                 try {
-                    // Call your existing helper function
                     send_notification_FCM(
                         $receiver->fcm_token,
                         'New Product Listing',
-                        "A new product listing has been posted."
+                        'A new product listing has been posted.'
                     );
+                    $sendCount++;
                 } catch (\Exception $e) {
-                    Log::error("FCM Send Error for User {$receiverId}: ".$e->getMessage());
+                    Log::error("FCM Send Error for User {$receiver->id}: ".$e->getMessage());
                 }
             }
+        });
 
-        }
 
 
             return ApiResponse::success('Listing created successfully', ['data' => $data]);

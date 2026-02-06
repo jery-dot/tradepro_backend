@@ -98,53 +98,33 @@ class JobPostController extends Controller
         ];
 
         // Get the Apprentice and Llaborer users
-        $receivers = User::whereIn('user_type', [UserType::APPRENTICE, UserType::LABORER])->get();
+        // $receivers = User::whereIn('user_type', [UserType::APPRENTICE, UserType::LABORER])->get();
 
         $sendCount = 0;
+
+        // Send FCM Push Notification
+        // We wrap this in a try-catch so that if FCM fails, the API still returns success
+        // (since the notification is saved in the DB).
         User::whereIn('user_type', [UserType::APPRENTICE, UserType::LABORER])
         ->whereNotNull('fcm_token')
         ->chunk(100, function ($receivers) use (&$sendCount) {
             foreach ($receivers as $receiver) {
-                // try {
+                try {
                     send_notification_FCM(
                         $receiver->fcm_token,
                         'New Job Post',
                         'A new job post has been created.'
                     );
                     $sendCount++;
-                // } catch (\Exception $e) {
-                //     Log::error("FCM Send Error for User {$receiver->id}: ".$e->getMessage());
-                // }
+                } catch (\Exception $e) {
+                    Log::error("FCM Send Error for User {$receiver->id}: ".$e->getMessage());
+                }
             }
         });
 
-        // Send FCM Push Notification
-        // We wrap this in a try-catch so that if FCM fails, the API still returns success
-        // (since the notification is saved in the DB).
-        /*$result = null;
-        foreach ($receivers as $receiver) {
-            if (! empty($receiver->fcm_token)) {
-                $receiverId = $receiver->id;
-                try {
-                    // Call your existing helper function
-                    $result = send_notification_FCM(
-                        $receiver->fcm_token,
-                        'New Job Post',
-                        "A new job post has been created."
-                    );
-                    $sendCount++;
-                } catch (\Exception $e) {
-                    Log::error("FCM Send Error for User {$receiverId}: ".$e->getMessage());
-                }
-            }
-
-        }*/
-
         return ApiResponse::success('Job posted successfully', [
             'data' => $data,
-            // 'fcm_result' => $result,
-            'send_count' => $sendCount,
-            'receivers' => $receivers,
+            // 'send_count' => $sendCount,
         ]);
     }
 

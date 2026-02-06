@@ -6,6 +6,7 @@ use App\Http\Controllers\V1\Auth\AuthController;
 use App\Http\Controllers\V1\Auth\ContractorController;
 use App\Http\Controllers\V1\Auth\LaborerController;
 use App\Http\Controllers\V1\Auth\SubcontractorController;
+use App\Http\Controllers\V1\FileUploadController;
 use App\Http\Controllers\V1\JobPostController;
 use App\Http\Controllers\V1\ListingController;
 use App\Http\Controllers\V1\ListingMetaController;
@@ -102,7 +103,7 @@ Route::middleware('auth:api')->group(function () {
         Route::middleware('worker')->group(function () {
             Route::post('/create_apprentice_profile', 'createApprenticeProfile');
             Route::post('/edit_apprentice_profile', 'editApprenticeProfile');
-            Route::get('/get_op_apprentice_profile', 'getApprenticeProfile');
+            Route::get('/get_opportunity_apprentice_profile', 'getApprenticeProfile');
             Route::post('/delete_apprentice_profile', 'deleteApprenticeProfile');
         });
 
@@ -154,3 +155,5 @@ Route::middleware('auth:api')->group(function () {
 
 
 Route::post('/contact/send', [ContactController::class, 'send']);
+
+Route::post('/upload', [FileUploadController::class, 'upload']);

@@ -80,27 +80,28 @@ class OpportunityController extends Controller
 
 
         // Get the Apprentice and Llaborer users
-        $receivers = User::whereIn('user_type', [UserType::APPRENTICE, UserType::LABORER])->get();
+        // $receivers = User::whereIn('user_type', [UserType::APPRENTICE, UserType::LABORER])->get();
 
         // Send FCM Push Notification
         // We wrap this in a try-catch so that if FCM fails, the API still returns success
         // (since the notification is saved in the DB).
-        foreach ($receivers as $receiver) {
-            if (! empty($receiver->fcm_token)) {
-                $receiverId = $receiver->id;
+        User::whereIn('user_type', [UserType::APPRENTICE, UserType::LABORER])
+        ->whereNotNull('fcm_token')
+        ->chunk(100, function ($receivers) use (&$sendCount) {
+            foreach ($receivers as $receiver) {
                 try {
-                    // Call your existing helper function
                     send_notification_FCM(
                         $receiver->fcm_token,
                         'New Opportunity Posted',
-                        "A new apprenticeship opportunity has been posted."
+                        'A new apprenticeship opportunity has been posted.'
                     );
+                    $sendCount++;
                 } catch (\Exception $e) {
-                    Log::error("FCM Send Error for User {$receiverId}: ".$e->getMessage());
+                    Log::error("FCM Send Error for User {$receiver->id}: ".$e->getMessage());
                 }
             }
+        });
 
-        }
 
         return response()->json($responseData, 201);
     }

@@ -67,27 +67,27 @@ class ApprenticeProfileController extends Controller
 
 
         // Get the Apprentice and Llaborer users
-        $receivers = User::whereIn('user_type', [UserType::CONTRACTOR, UserType::SUBCONTRACTOR])->get();
+        // $receivers = User::whereIn('user_type', [UserType::CONTRACTOR, UserType::SUBCONTRACTOR])->get();
 
         // Send FCM Push Notification
         // We wrap this in a try-catch so that if FCM fails, the API still returns success
         // (since the notification is saved in the DB).
-        foreach ($receivers as $receiver) {
-            if (! empty($receiver->fcm_token)) {
-                $receiverId = $receiver->id;
+        User::whereIn('user_type', [UserType::CONTRACTOR, UserType::SUBCONTRACTOR])
+        ->whereNotNull('fcm_token')
+        ->chunk(100, function ($receivers) use (&$sendCount) {
+            foreach ($receivers as $receiver) {
                 try {
-                    // Call your existing helper function
                     send_notification_FCM(
                         $receiver->fcm_token,
                         'New Apprenticeship Profile',
-                        "A new apprentice profile has been created."
+                        'A new apprentice profile has been created.'
                     );
+                    $sendCount++;
                 } catch (\Exception $e) {
-                    Log::error("FCM Send Error for User {$receiverId}: ".$e->getMessage());
+                    Log::error("FCM Send Error for User {$receiver->id}: ".$e->getMessage());
                 }
             }
-
-        }
+        });
 
         return response()->json([
             'status' => 'success',
