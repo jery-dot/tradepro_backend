@@ -104,6 +104,7 @@ class JobPostController extends Controller
         // We wrap this in a try-catch so that if FCM fails, the API still returns success
         // (since the notification is saved in the DB).
         $result = null;
+        $sendCount = 0;
         foreach ($receivers as $receiver) {
             if (! empty($receiver->fcm_token)) {
                 $receiverId = $receiver->id;
@@ -114,6 +115,7 @@ class JobPostController extends Controller
                         'New Job Post',
                         "A new job post has been created."
                     );
+                    $sendCount++;
                 } catch (\Exception $e) {
                     Log::error("FCM Send Error for User {$receiverId}: ".$e->getMessage());
                 }
@@ -124,6 +126,7 @@ class JobPostController extends Controller
         return ApiResponse::success('Job posted successfully', [
             'data' => $data,
             'fcm_result' => $result,
+            'send_count' => $sendCount,
             'receivers' => $receivers,
         ]);
     }
