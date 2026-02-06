@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Opportunity;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class OpportunityController extends Controller
 {

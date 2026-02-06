@@ -10,6 +10,7 @@ use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class JobPostController extends Controller
 {
@@ -116,7 +117,7 @@ class JobPostController extends Controller
                     Log::error("FCM Send Error for User {$receiverId}: ".$e->getMessage());
                 }
             }
-        
+
         }
 
         return ApiResponse::success('Job posted successfully', [

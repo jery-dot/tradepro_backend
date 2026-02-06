@@ -9,6 +9,7 @@ use App\Models\ApprenticeProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ApprenticeProfileController extends Controller
 {
