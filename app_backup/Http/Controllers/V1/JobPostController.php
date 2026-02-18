@@ -470,13 +470,9 @@ class JobPostController extends Controller
         }
 
         if ($availabilityToday) {
-            // $query->whereHas('owner', function ($q) {
-            //     $q->where('available_today', 1);
-            // });
-            /**
-             * Get jobs where the `start_date` = today's date
-             */
-            $query->whereDate('start_date', \Carbon\Carbon::today());
+            $query->whereHas('owner', function ($q) {
+                $q->where('available_today', 1);
+            });
         }
 
         // Location + radius (Haversine in miles)

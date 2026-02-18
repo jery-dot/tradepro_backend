@@ -28,15 +28,8 @@ class User extends Authenticatable implements JWTSubject
         'available_today',
         'profile_image',
         'fcm_token',
-        // Stripe columns
-        'stripe_id',
-        'stripe_status',
-        'default_payment_method',
-        'trial_ends_at',
-        'active_subscription_id'
-
     ];
-    
+
     protected $hidden = [
         'password',
     ];
@@ -156,37 +149,5 @@ class User extends Authenticatable implements JWTSubject
 
     public function opportunities(){
         return $this->hasMany(Opportunity::class);
-    }
-
-    // public function activeSubscription()
-    // {
-    //     return $this->belongsTo(UserSubscription::class, 'active_subscription_id');
-    // }
-   public function activeSubscription()
-    {
-        return $this->belongsTo(UserSubscription::class, 'active_subscription_id');
-    }
-
-
-    public function subscriptions()
-    {
-        return $this->hasMany(UserSubscription::class);
-    }
-
-    public function plan()
-    {
-        return $this->hasOneThrough(Plan::class, UserSubscription::class);
-    }
-
-    public function subscriptionPlan(): ?Plan
-    {
-        return $this->activeSubscription?->plan;
-    }
-    /**
-     * Check if the user has an active, paid subscription or is on trial.
-     */
-    public function isSubscribed(): bool
-    {
-        return $this->activeSubscription?->stripe_status === 'active';
     }
 }

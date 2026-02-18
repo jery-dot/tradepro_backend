@@ -12,13 +12,9 @@ use App\Http\Controllers\V1\ListingController;
 use App\Http\Controllers\V1\ListingMetaController;
 use App\Http\Controllers\V1\NotificationController;
 use App\Http\Controllers\V1\OpportunityController;
-use App\Http\Controllers\V1\PlanController;
 use App\Http\Controllers\V1\ReviewController;
 use App\Http\Controllers\V1\SpecializationController;
-use App\Http\Controllers\V1\StripeController;
 use App\Http\Controllers\V1\UserController;
-use App\Http\Controllers\V1\SubscriptionController;
-use App\Http\Controllers\V1\WebhookController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ContactController;
 
@@ -155,31 +151,9 @@ Route::middleware('auth:api')->group(function () {
 
       // update user FCM token
       Route::post('/update_fcm_token', [UserController::class, 'updateFcmToken']);
-
 });
 
 
 Route::post('/contact/send', [ContactController::class, 'send']);
 
 Route::post('/upload', [FileUploadController::class, 'upload']);
-
-
-
-
-// Stripe
-Route::middleware('auth:api')->group(function () {
-    // Plan Discovery
-    Route::get('/plans', [PlanController::class, 'getPlans']);
-
-    // The Workflow
-    Route::post('/subscription/prepare', [SubscriptionController::class, 'prepareSubscription']);
-    Route::post('/subscription/confirm', [SubscriptionController::class, 'storeSubscription']);
-
-    // Management
-    Route::post('/subscription/cancel', [SubscriptionController::class, 'cancel']);
-    Route::get('/subscription/status', [SubscriptionController::class, 'status']);
-    Route::get('/subscription/portal', [SubscriptionController::class, 'getPortalUrl']);
-});
-
-// Webhook stays public
-Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
