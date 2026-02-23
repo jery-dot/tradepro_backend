@@ -7,6 +7,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Listing;
 use App\Models\ListingImage;
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -206,7 +207,41 @@ class ListingController extends Controller
         // We wrap this in a try-catch so that if FCM fails, the API still returns success
         // (since the notification is saved in the DB).
 
-        User::whereNot('id', $user->id)
+        try {
+            DB::transaction(function () use (&$sendCount) {
+                User::whereNot('id', auth('api')->user()->id)
+                    ->whereNotNull('fcm_token')
+                    ->chunk(100, function ($receivers) use (&$sendCount) {
+                        foreach ($receivers as $receiver) {
+                            // 1. Create the Database Record
+                            Notification::create([
+                                'user_id'     => $receiver->id,
+                                'title'       => 'New Product Listing',
+                                'description' => 'A new product listing has been posted.',
+                                'is_read'     => false,
+                            ]);
+
+                            // 2. Trigger the FCM Send
+                            // Note: If this throws an Exception, the DB transaction rolls back
+                            send_notification_FCM(
+                                $receiver->fcm_token,
+                                'New Product Listing',
+                                'A new product listing has been posted.'
+                            );
+
+                            $sendCount++;
+                        }
+                    });
+            });
+        } catch (\Exception $e) {
+            // This catches the error, stops the loop, and rolls back the DB
+            Log::error("Bulk Notification Failed. Process Halted: " . $e->getMessage());
+            
+            // Optional: Reset count or notify admin that the process died
+            $sendCount = 0; 
+            throw $e; // Re-throw if you want the global error handler to see it
+        }
+        /*User::whereNot('id', $user->id)
         ->whereNotNull('fcm_token')
         ->chunk(100, function ($receivers) use (&$sendCount) {
             foreach ($receivers as $receiver) {
@@ -221,7 +256,7 @@ class ListingController extends Controller
                     Log::error("FCM Send Error for User {$receiver->id}: ".$e->getMessage());
                 }
             }
-        });
+        });*/
 
 
 

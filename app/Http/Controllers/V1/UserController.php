@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1;
 
 use App\Enums\UserType;
+use App\Helpers\ApiResponse;
 use App\Helpers\FileUploadHelper;
 use App\Http\Controllers\Controller;
 use App\Models\JobRequirement;
@@ -64,7 +65,7 @@ class UserController extends Controller
             'job_requirements.*' => 'string|max:255',
         ]);
 
-         $incomingSlugs = $request->input('job_requirements', []);
+        $incomingSlugs = $request->input('job_requirements', []);
 
         // Fetch IDs from job_requirements table by slug column
         $jobRequirementIds = JobRequirement::whereIn('slug', $incomingSlugs)
@@ -77,7 +78,6 @@ class UserController extends Controller
         // - Detach ones not present in $jobRequirementIds
         $user->contractor->jobRequirements()->sync($jobRequirementIds);
 
-
         // $user->job_requirements = $validated['job_requirements'];
         $user->contractor->save();
 
@@ -87,7 +87,6 @@ class UserController extends Controller
 
         // Return slugs in response to match the request style
         $jobRequirementSlugs = $requirements->pluck('name')->values()->all();
-
 
         return response()->json([
             'status' => 'success',
@@ -109,7 +108,7 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    function formatFileSize($bytes, $precision = 2)
+    public function formatFileSize($bytes, $precision = 2)
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
 
@@ -120,7 +119,7 @@ class UserController extends Controller
         $power = floor(log($bytes, 1024));
         $power = min($power, count($units) - 1);
 
-        return round($bytes / pow(1024, $power), $precision) . ' ' . $units[$power];
+        return round($bytes / pow(1024, $power), $precision).' '.$units[$power];
     }
 
     public function updateProfileDocument(Request $request)
@@ -134,7 +133,7 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => "The insurance file field is required.",
+                'message' => 'The insurance file field is required.',
             ], 422);
         }
 
@@ -218,8 +217,8 @@ class UserController extends Controller
         }
 
         return response()->json([
-            "status" => false,
-            "message" => "Unauthorized"
+            'status' => false,
+            'message' => 'Unauthorized',
         ], 401);
     }
 
@@ -770,6 +769,137 @@ class UserController extends Controller
                 'fcm_token' => $user->fcm_token,
                 'updated_at' => $user->updated_at?->toIso8601String(),
             ],
+        ]);
+    }
+
+    /**
+     * Summary of profile
+     *
+     * @param  Request  $request
+     */
+    public function profile()
+    {
+
+        // 1. Get the logged-in user
+        $user = auth('api')->user();
+
+        if (! $user) {
+            return ApiResponse::error('Unauthorized', 401);
+        }
+
+        // 2. Eager-load profile AND subscription with its plan
+        $user->load(['activeSubscription.plan']);
+
+        switch ((int) $user->user_type->value) {
+            case UserType::CONTRACTOR: $user->load('contractor');
+                break;
+            case UserType::SUBCONTRACTOR: $user->load('subcontractor');
+                break;
+            case UserType::LABORER: $user->load('laborer');
+                break;
+            case UserType::APPRENTICE: $user->load('apprentice');
+                break;
+        }
+
+        // 4. Build base user payload
+        $userPayload = [
+            'id' => (string) $user->id,
+            'name' => $user->name ?? '',
+            'user_type' => (int) $user->user_type->value,
+            'email' => $user->email,
+            'location' => [
+                'latitude' => $user->latitude ?? null,
+                'longitude' => $user->longitude ?? null,
+            ],
+            'available_today' => $user->available_today,
+
+            // --- ADDED THIS SECTION FOR FLUTTER HOME SCREEN ---
+            'active_subscription' => $user->activeSubscription ? [
+                'id' => $user->activeSubscription->id,
+                'stripe_status' => $user->activeSubscription->stripe_status,
+                'trial_ends_at' => $user->activeSubscription->trial_ends_at
+                    ? $user->activeSubscription->trial_ends_at->format('M d, Y')
+                    : null,
+                'plan' => [
+                    'name' => $user->activeSubscription->plan->name,
+                    'price' => $user->activeSubscription->plan->price,
+                ],
+            ] : null,
+        ];
+
+        // 5. Merge type-specific profile details
+        if ($user->user_type === 2 && $user->relationLoaded('laborer') && $user->laborer) {
+            $laborer = $user->laborer;
+            $userPayload['laborer'] = [
+                'id' => $laborer->id,
+                'specialization_id' => $laborer->specialization_id,
+                'custom_specialization' => $laborer->custom_specialization,
+                'experience_level' => $laborer->experience_level,
+                'age' => $laborer->age,
+                'gender' => $laborer->gender,
+                'has_insurance' => (bool) $laborer->has_insurance,
+                'background_check_completed' => (bool) $laborer->background_check_completed,
+                'looking_for_apprenticeship' => (bool) $laborer->looking_for_apprenticeship,
+                'trade_school' => [
+                    'name' => $laborer->trade_school_name,
+                    'program_year' => $laborer->trade_school_program_year,
+                ],
+                'profile_completion' => (bool) $laborer->profile_completion,
+            ];
+        }
+
+        if ($user->user_type === 1 && $user->relationLoaded('subcontractor') && $user->subcontractor) {
+            $sub = $user->subcontractor;
+            $userPayload['subcontractor'] = [
+                'id' => $sub->id,
+                'location' => [
+                    'latitude' => $user->latitude,
+                    'longitude' => $user->longitude,
+                ],
+                'insurance_file_url' => $sub->insurance_file_path ?? null,
+                'profile_completion' => (bool) $sub->profile_completion,
+            ];
+        }
+
+        if ($user->user_type === 0 && $user->relationLoaded('contractor') && $user->contractor) {
+            $contractor = $user->contractor->load('jobRequirements'); // load requirements with contractor.
+
+            $userPayload['contractor'] = [
+                'id' => $contractor->id,
+                'location' => [
+                    'latitude' => $user->latitude,
+                    'longitude' => $user->longitude,
+                ],
+                'file_url' => $contractor->file_path ?? null,
+                'job_requirements' => $contractor->jobRequirements
+                    ->pluck('slug')
+                    ->values()
+                    ->all(),
+                'profile_completion' => (bool) $contractor->profile_completion,
+            ];
+        }
+
+        if ($user->user_type === 3 && $user->relationLoaded('apprentice') && $user->apprentice) {
+            $apprentice = $user->apprentice->load('tradeInterest');
+
+            $userPayload['apprentice'] = [
+                'id' => $apprentice->id,
+                'trade_interest' => $apprentice->tradeInterest ? [
+                    'id' => $apprentice->tradeInterest->id,
+                    'name' => $apprentice->tradeInterest->name,
+                ] : null,
+                'trade_school' => [
+                    'name' => $apprentice->trade_school_name,
+                    'current_program_year' => $apprentice->current_program_year,
+                ],
+                'experience_level' => $apprentice->experience_level,
+                'profile_completion' => (bool) $apprentice->profile_completion,
+            ];
+        }
+
+        // 6. Return response
+        return ApiResponse::success('Login successful', [
+            'user' => $userPayload,
         ]);
     }
 }

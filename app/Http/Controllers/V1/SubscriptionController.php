@@ -39,9 +39,16 @@ class SubscriptionController extends Controller
             'payment_method_types' => ['card'],
         ]);
 
+        // 3. Create Ephemeral Key for the customer
+        $ephemeralKey = \Stripe\EphemeralKey::create(
+            ['customer' => $user->stripe_id],
+            ['stripe_version' => '2022-11-15'] // Use your Stripe API version
+        );
+
         return response()->json([
             'intent_client_secret' => $setupIntent->client_secret,
             'customer_id' => $user->stripe_id,
+            'ephemeral_key' => $ephemeralKey->secret, // Add this
         ]);
     }
 
@@ -119,6 +126,9 @@ class SubscriptionController extends Controller
             return response()->json([
                 'message' => 'Subscription successful',
                 'subscription' => $userSub,
+                // Add these two lines for Flutter to handle 3D Secure
+                'status' => $subscription->status,
+                'payment_intent_client_secret' => $subscription->latest_invoice->payment_intent->client_secret ?? null,
             ]);
 
         } catch (\Stripe\Exception\ApiErrorException $e) {
@@ -135,6 +145,34 @@ class SubscriptionController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function cancel(Request $request)
+{
+    $user = $request->user();
+    $sub = $user->activeSubscription;
+
+    if (!$sub) {
+        return response()->json(['error' => 'No active subscription found'], 404);
+    }
+
+    $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+
+    // 1. Update Stripe
+    $stripeSubscription = $stripe->subscriptions->update($sub->stripe_subscription_id, [
+        'cancel_at_period_end' => true,
+    ]);
+
+    // 2. Update local DB
+    // We store 'cancelling' so the UI can show a different "Ending soon" state
+    $sub->update([
+        'stripe_status' => 'cancelling',
+        'trial_ends_at' => \Carbon\Carbon::createFromTimestamp($stripeSubscription->current_period_end)
+    ]);
+
+    return response()->json([
+        'message' => 'Subscription will cancel at the end of the billing period.',
+        'ends_at' => $sub->trial_ends_at->format('M d, Y')
+    ]);
+}
+    public function cancelOld(Request $request)
     {
         $user = $request->user();
         $sub = $user->activeSubscription;

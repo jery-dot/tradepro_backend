@@ -6,10 +6,13 @@ use App\Enums\UserType;
 use App\Helpers\FileUploadHelper;
 use App\Http\Controllers\Controller;
 use App\Models\ApprenticeProfile;
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+
 
 class ApprenticeProfileController extends Controller
 {
@@ -72,7 +75,42 @@ class ApprenticeProfileController extends Controller
         // Send FCM Push Notification
         // We wrap this in a try-catch so that if FCM fails, the API still returns success
         // (since the notification is saved in the DB).
-        User::whereIn('user_type', [UserType::CONTRACTOR, UserType::SUBCONTRACTOR])
+
+        try {
+            DB::transaction(function () use (&$sendCount) {
+                User::whereIn('user_type', [UserType::CONTRACTOR, UserType::SUBCONTRACTOR])
+                    ->whereNotNull('fcm_token')
+                    ->chunk(100, function ($receivers) use (&$sendCount) {
+                        foreach ($receivers as $receiver) {
+                            // 1. Create the Database Record
+                            Notification::create([
+                                'user_id'     => $receiver->id,
+                                'title'       => 'New Apprenticeship Profile',
+                                'description' => 'A new apprentice profile has been created.',
+                                'is_read'     => false,
+                            ]);
+
+                            // 2. Trigger the FCM Send
+                            // Note: If this throws an Exception, the DB transaction rolls back
+                            send_notification_FCM(
+                                $receiver->fcm_token,
+                                    'New Apprenticeship Profile',
+                                     'A new apprentice profile has been created.'
+                            );
+
+                            $sendCount++;
+                        }
+                    });
+            });
+        } catch (\Exception $e) {
+            // This catches the error, stops the loop, and rolls back the DB
+            Log::error("Bulk Notification Failed. Process Halted: " . $e->getMessage());
+
+            // Optional: Reset count or notify admin that the process died
+            $sendCount = 0;
+            throw $e; // Re-throw if you want the global error handler to see it
+        }
+        /*User::whereIn('user_type', [UserType::CONTRACTOR, UserType::SUBCONTRACTOR])
         ->whereNotNull('fcm_token')
         ->chunk(100, function ($receivers) use (&$sendCount) {
             foreach ($receivers as $receiver) {
@@ -87,7 +125,7 @@ class ApprenticeProfileController extends Controller
                     Log::error("FCM Send Error for User {$receiver->id}: ".$e->getMessage());
                 }
             }
-        });
+        });*/
 
         return response()->json([
             'status' => 'success',

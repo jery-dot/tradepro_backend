@@ -190,12 +190,11 @@ class NotificationController extends Controller
         // 5. Send FCM Push Notification
         // We wrap this in a try-catch so that if FCM fails, the API still returns success
         // (since the notification is saved in the DB).
-        $result = 'Empty';
-        if (! empty($receiver->fcm_token)) {
-            $result = 'Empty1';
+        
+        if (! empty($receiver->fcm_token)) { 
             try {
                 // Call your existing helper function
-                $result = send_notification_FCM(
+                send_notification_FCM(
                     $receiver->fcm_token,
                     $validated['title'],
                     $validated['message']
