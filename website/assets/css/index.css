@@ -774,7 +774,7 @@ Features section
 }
 
 .font-handwritten {
-  font-family: 'YourNotes', cursive !important;
+  font-family: 'Roboto', sans-serif !important;
   font-size: 2.5rem;
   color: #333;
   margin-bottom: 1rem;
@@ -912,7 +912,7 @@ Features section
 }
 
 .handwritten {
-  font-family: 'YourNotes', cursive !important;
+  font-family: 'Roboto', sans-serif !important;
   font-weight: 400;
 }
 
@@ -1105,7 +1105,7 @@ Features section
 
 /* TEXT */
 .handwritten {
-  font-family: 'YourNotes', cursive;
+  font-family: 'Roboto', sans-serif;
   font-size: 2.2rem;
   line-height: 1.2;
 }
