@@ -139,8 +139,11 @@ class JobPostController extends Controller
      */
     public function listJobs(Request $request)
     {
+        // Get the connected Contractor/sub-contractor user
+        $user = auth('api')->user();
+
         // Later you can add filters/pagination; for now fetch all
-        $jobs = JobPost::orderByDesc('created_at')->get(); // Simple Eloquent query for listing.[web:29][web:324]
+        $jobs = JobPost::where('user_id', $user->id)->orderByDesc('created_at')->get(); // Simple Eloquent query for listing
 
         $data = $jobs->map(function (JobPost $job) {
             return [
