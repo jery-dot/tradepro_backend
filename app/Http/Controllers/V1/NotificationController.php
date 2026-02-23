@@ -51,7 +51,7 @@ class NotificationController extends Controller
 
         $items = $notifications->map(function (Notification $n) {
             return [
-                'id' => $n->public_id,
+                'id' => $n->id,
                 'title' => $n->title,
                 'description' => $n->description,
                 'time' => optional($n->created_at)->format('h:i A'),
