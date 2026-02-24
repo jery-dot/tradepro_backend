@@ -137,9 +137,9 @@ class JobPostController extends Controller
         } catch (\Exception $e) {
             // This catches the error, stops the loop, and rolls back the DB
             Log::error("Bulk Notification Failed. Process Halted: " . $e->getMessage());
-            
+
             // Optional: Reset count or notify admin that the process died
-            $sendCount = 0; 
+            $sendCount = 0;
             throw $e; // Re-throw if you want the global error handler to see it
         }
         /*User::whereIn('user_type', [UserType::APPRENTICE, UserType::LABORER])
@@ -517,6 +517,15 @@ class JobPostController extends Controller
              * Get jobs where the `start_date` = today's date
              */
             $query->whereDate('start_date', \Carbon\Carbon::today());
+        }
+
+        // Get based on location city
+        if (! empty($location['name'])) {
+            $query->where(function ($q) use ($location) {
+                $q->where('city', 'like', '%'.$location['name'].'%')
+                    ->orWhere('state', 'like', '%'.$location['name'].'%')
+                    ->orWhere('country', 'like', '%'.$location['name'].'%');
+            });
         }
 
         // Location + radius (Haversine in miles)
