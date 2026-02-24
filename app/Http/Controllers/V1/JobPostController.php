@@ -543,24 +543,25 @@ class JobPostController extends Controller
         // }
 
         // Filters
-        // if (! empty($filters['start_date'])) {
-        //     $query->whereDate('start_date', '>=', $filters['start_date']);
-        // }
+        if (! empty($filters['start_date'])) {
+            $query->whereDate('start_date', '>=', $filters['start_date']);
+        }
 
-        // if (! empty($filters['duration_months'])) {
-        //     $query->where(function ($q) use ($filters) {
-        //         $q->where('duration_unit', 'months')
-        //             ->where('duration_value', '>=', $filters['duration_months']);
-        //     });
-        // }
+        if (! empty($filters['duration_months'])) {
+            $query->where(function ($q) use ($filters) {
+                $q
+                // ->where('duration_unit', 'months')
+                    ->where('duration_value', '>=', $filters['duration_months']);
+            });
+        }
 
-        // if (! empty($filters['minimum_pay_rate'])) {
-        //     $query->where('pay_rate_amount', '>=', $filters['minimum_pay_rate']);
-        // }
+        if (! empty($filters['minimum_pay_rate'])) {
+            $query->where('pay_rate_amount', '>=', $filters['minimum_pay_rate']);
+        }
 
-        // if (! empty($filters['pay_unit'])) {
-        //     $query->where('pay_rate_type', $filters['pay_unit']);
-        // }
+        if (! empty($filters['pay_unit'])) {
+            $query->where('pay_rate_type', $filters['pay_unit']);
+        }
 
         $paginator = $query->paginate($limit, ['*'], 'page', $page); // custom page & per page.[web:296][web:470]
 
