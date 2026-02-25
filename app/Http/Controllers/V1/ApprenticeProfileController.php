@@ -354,6 +354,7 @@ class ApprenticeProfileController extends Controller
 
             return [
                 'id' => $profile->id,
+                'user_id' => $user?->id,
                 'full_name' => $user?->name,
                 'profile_image_url' => $user?->profile_image,
                 'position_seeking' => $profile->position_seeking,
