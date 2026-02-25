@@ -521,10 +521,22 @@ class JobPostController extends Controller
 
         // Get based on location city
         if (! empty($location['name'])) {
-            $query->where(function ($q) use ($location) {
-                $q->where('city', 'like', '%'.$location['name'].'%')
-                    ->orWhere('state', 'like', '%'.$location['name'].'%')
-                    ->orWhere('country', 'like', '%'.$location['name'].'%');
+            // $query->where(function ($q) use ($location) {
+            //     $q->where('city', 'like', '%'.$location['name'].'%')
+            //         ->orWhere('state', 'like', '%'.$location['name'].'%')
+            //         ->orWhere('country', 'like', '%'.$location['name'].'%');
+            // });
+
+            $parts = collect(explode(',', $location['name']))
+                        ->map(fn($item) => trim($item))
+                        ->filter();
+
+            $query->where(function ($q) use ($parts) {
+                foreach ($parts as $part) {
+                    $q->orWhere('city', 'like', "%$part%")
+                    ->orWhere('state', 'like', "%$part%")
+                    ->orWhere('country', 'like', "%$part%");
+                }
             });
         }
 
