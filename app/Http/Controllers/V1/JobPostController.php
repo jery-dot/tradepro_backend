@@ -476,7 +476,7 @@ class JobPostController extends Controller
             'pagination' => 'nullable|array',
             'pagination.page' => 'nullable|integer|min:1',
             'pagination.limit' => 'nullable|integer|min:1|max:100',
-        ]); // Optional filters handled via nullable rules.[web:466][web:469]
+        ]); // Optional filters handled via nullable rules.
 
         $skill = $validated['skill'] ?? null;
         $availabilityToday = (bool) ($validated['availability_today'] ?? false);
@@ -492,7 +492,7 @@ class JobPostController extends Controller
         $lng = $location['longitude'] ?? null;
         $radius = $validated['search_radius_miles'] ?? 25;
         $query = JobPost::query()
-            ->with('owner');
+            ->with('owner')->latest();
         // ->where('status', 'active'); // base filter.
 
         if ($skill) {
@@ -543,8 +543,8 @@ class JobPostController extends Controller
         // }
 
         // Filters
-        if (! empty($filters['start_date'])) {
-            $query->whereDate('start_date', '>=', $filters['start_date']);
+        if (! empty($filters['start_date']) && !$availabilityToday) {
+            $query->whereDate('start_date', '=', $filters['start_date']);
         }
 
         if (! empty($filters['duration_months'])) {
@@ -571,7 +571,7 @@ class JobPostController extends Controller
 
             $companyRating = $owner
                 ? round($owner->receivedReviews()->avg('overall_rating') ?? 0, 1)
-                : 0.0; // average rating for the company.[web:433][web:436]
+                : 0.0; // average rating for the company.
 
                 $owner->ratting = $companyRating;
             return [
