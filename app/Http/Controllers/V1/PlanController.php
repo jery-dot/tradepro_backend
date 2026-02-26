@@ -12,8 +12,8 @@ class PlanController extends Controller
      * GET available subscription plans
      */
     public function getPlans()
-    {   
-        $plans = Plan::select(['id', 'name', 'price', 'currency', 'billing_cycle', 'trial_days', 'features'])
+    {
+        $plans = Plan::select(['id', 'stripe_price_id', 'name', 'price', 'currency', 'billing_cycle', 'trial_days', 'features'])
                     ->get();
 
         return response()->json([
