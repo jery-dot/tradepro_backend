@@ -3,7 +3,40 @@
 use Google\Auth\Credentials\ServiceAccountCredentials;
 use Illuminate\Support\Facades\Http;
 
-function send_notification_FCM($fcm_token, $title, $body) {
+function send_notification_FCM($fcm_token, $title, $body, $accessToken = null) {
+    $credentialsFilePath = storage_path('app/firebase_credentials.json');
+    $json = json_decode(file_get_contents($credentialsFilePath), true);
+    $projectId = $json['project_id'];
+
+    // If no token is passed, fetch it (but ideally, pass it in for bulk)
+    if (!$accessToken) {
+        $credentials = new ServiceAccountCredentials(
+            ['https://www.googleapis.com/auth/firebase.messaging'],
+            $credentialsFilePath
+        );
+        $tokenArray = $credentials->fetchAuthToken();
+        $accessToken = $tokenArray['access_token'];
+    }
+
+    $apiUrl = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
+
+    $response = Http::withToken($accessToken)
+        ->post($apiUrl, [
+            'message' => [
+                'token' => $fcm_token,
+                'notification' => ['title' => $title, 'body' => $body],
+                'android' => ['priority' => 'high'],
+            ],
+        ]);
+
+    if ($response->successful()) return true;
+
+    Log::error('FCM Error: ' . $response->body());
+    return false;
+}
+
+
+function send_notification_FCMOld2($fcm_token, $title, $body) {
     // 1. Path to your JSON credentials
     $credentialsFilePath = storage_path('app/firebase_credentials.json');
 

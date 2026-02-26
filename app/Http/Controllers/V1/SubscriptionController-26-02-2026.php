@@ -7,8 +7,6 @@ use App\Models\Plan;
 use App\Models\UserSubscription;
 use Illuminate\Http\Request;
 use Stripe\Stripe;
-use Stripe\PaymentIntent;
-
 
 class SubscriptionController extends Controller
 {
@@ -21,7 +19,7 @@ class SubscriptionController extends Controller
     /**
      * Summary of prepareSubscription
      */
-    public function prepareSubscriptionOld(Request $request)
+    public function prepareSubscription(Request $request)
     {
         $user = $request->user();
 
@@ -54,45 +52,6 @@ class SubscriptionController extends Controller
         ]);
     }
 
-    public function prepareSubscription(Request $request)
-    {
-        try {
-
-            $user = $request->user();
-
-            // 1. Create Stripe Customer if not exists
-            if (! $user->stripe_id) {
-                $customer = \Stripe\Customer::create([
-                    'email' => $user->email,
-                    'name' => $user->name,
-                ]);
-                $user->update(['stripe_id' => $customer->id]);
-            }
-
-            $request->validate([
-                'amount' => 'required|numeric|min:1',
-            ]);
-
-            $paymentIntent = PaymentIntent::create([
-                'amount' => $request->amount, // smallest currency unit
-                'currency' => 'usd',
-                'automatic_payment_methods' => [
-                    'enabled' => true,
-                ],
-            ]);
-
-            return response()->json([
-                'status' => true,
-                'intent_client_secret' => $paymentIntent->client_secret,
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage(),
-            ], 500);
-        }
-    }
     /**
      * Summary of storeSubscription
      */
