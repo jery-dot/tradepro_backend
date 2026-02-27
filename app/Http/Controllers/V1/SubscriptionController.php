@@ -62,7 +62,7 @@ class SubscriptionController extends Controller
         }
     }
 
-    public function storeSubscription1(Request $request)
+    public function storeSubscription(Request $request)
     {
         $user = $request->user();
 
