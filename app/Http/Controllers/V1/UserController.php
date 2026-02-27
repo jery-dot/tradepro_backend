@@ -512,10 +512,10 @@ class UserController extends Controller
             'message' => 'User settings fetched successfully.',
             'data' => [
                 'notification_status' => (bool) $user->notification_status ?? true,
-                'subscription_status' => $user->subscription_status ?? 'inactive',
+                'subscription_status' => $user->activeSubscription ? $user->activeSubscription->stripe_status : 'inactive',
             ],
         ]);
-    }
+    } 
 
     /**
      * Update Notification Status API.
