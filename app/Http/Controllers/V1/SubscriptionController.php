@@ -47,6 +47,7 @@ class SubscriptionController extends Controller
                 'automatic_payment_methods' => [
                     'enabled' => true,
                 ],
+                'setup_future_usage' => 'off_session',
             ]);
             
             // Create Ephemeral Key for the customer
