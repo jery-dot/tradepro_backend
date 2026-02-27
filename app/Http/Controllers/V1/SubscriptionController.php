@@ -96,7 +96,7 @@ class SubscriptionController extends Controller
     /**
      * Summary of storeSubscription
      */
-    public function storeSubscription(Request $request)
+    public function storeSubscriptionOld(Request $request)
     {
         $request->validate([
             'plan_id' => 'required|exists:plans,id',
@@ -150,6 +150,91 @@ class SubscriptionController extends Controller
                 ],
             ]);
 
+
+            // 5. Save to Database
+            $userSub = UserSubscription::create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'stripe_subscription_id' => $subscription->id,
+                'stripe_status' => $subscription->status,
+                'stripe_price_id' => $plan->stripe_price_id,
+                'trial_ends_at' => $plan->trial_days > 0 ? now()->addDays($plan->trial_days) : null,
+            ]);
+
+            // Update User's active pointer
+            $user->update(['active_subscription_id' => $userSub->id]);
+
+            return response()->json([
+                'message' => 'Subscription successful',
+                'subscription' => $userSub,
+                // Add these two lines for Flutter to handle 3D Secure
+                'status' => $subscription->status,
+                'payment_intent_client_secret' => $subscription->latest_invoice->payment_intent->client_secret ?? null,
+            ]);
+
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            // Specifically catch Stripe errors for better debugging
+            return response()->json(['error' => $e->getMessage()], 402);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    public function storeSubscription(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'plan_id' => 'required|exists:plans,id',
+            'payment_method_id' => 'required|string',
+        ]);
+
+        $paymentMethod = $request->payment_method_id;
+
+        $plan = Plan::find($request->plan_id);
+
+        try {
+            // 1. Ensure User has a Stripe ID
+            if (! $user->stripe_id) {
+                $customer = \Stripe\Customer::create(['email' => $user->email]);
+                $user->update(['stripe_id' => $customer->id]);
+            }
+
+            //get the user stripe ID
+            $customerId = $user->stripe_id;
+
+            // ⭐ Attach payment method
+            // We use the returned object to ensure we have the latest state
+            $paymentMethod = \Stripe\PaymentMethod::retrieve($request->payment_method_id);
+
+            if ($paymentMethod->customer !== $user->stripe_id) {
+                $paymentMethod = $paymentMethod->attach(['customer' => $user->stripe_id]);
+            }
+
+
+            // ⭐ Set default payment method
+            \Stripe\Customer::update($customerId, [
+                'invoice_settings' => [
+                    'default_payment_method' => $paymentMethod,
+                ],
+            ]);
+
+
+            // ⭐ Create subscription
+            $subscription = \Stripe\Subscription::create([
+                'customer' => $customerId,
+                'items' => [[
+                    'price_data' => [
+                        'unit_amount' => $plan->price * 100, // Convert $19.99 to 1999 cents
+                        'currency' => 'usd',
+                        'product' => $plan->stripe_price_id, // Your prod_xxx ID goes here
+                        'recurring' => ['interval' => 'month'],
+                    ],
+                ]],
+                'trial_period_days' => $plan->trial_days,
+                'expand' => ['latest_invoice.payment_intent'],
+            ]);
+
+            // return response()->json(['message' => 'Stripe customer ready', 'stripe_id' => $user->stripe_id]);
 
             // 5. Save to Database
             $userSub = UserSubscription::create([
