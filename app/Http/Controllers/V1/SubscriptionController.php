@@ -48,10 +48,19 @@ class SubscriptionController extends Controller
                     'enabled' => true,
                 ],
             ]);
+            
+            // Create Ephemeral Key for the customer
+            $ephemeralKey = \Stripe\EphemeralKey::create(
+                ['customer' => $user->stripe_id],
+                ['stripe_version' => '2022-11-15'] // Use your Stripe API version
+            );
+
 
             return response()->json([
                 'status' => true,
                 'intent_client_secret' => $paymentIntent->client_secret,
+                'customer_id' => $user->stripe_id,
+                'ephemeral_key' => $ephemeralKey->secret, // Add this
             ]);
 
         } catch (\Exception $e) {
