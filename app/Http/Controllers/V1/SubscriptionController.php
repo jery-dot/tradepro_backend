@@ -164,6 +164,49 @@ class SubscriptionController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function cancel(Request $request)
+{
+    $user = $request->user();
+    
+    // Using the relationship you defined (activeSubscription)
+    $sub = $user->activeSubscription;
+
+    if (!$sub) {
+        return response()->json(['error' => 'No active subscription found'], 404);
+    }
+
+    try {
+        // 1. Update Stripe 
+        // Note: Using \Stripe\Subscription::update because you set the API key in __construct
+        $stripeSubscription = \Stripe\Subscription::update($sub->stripe_subscription_id, [
+            'cancel_at_period_end' => true,
+        ]);
+
+        // 2. Safely parse the timestamp
+        // Stripe returns null if the period hasn't been defined yet, 
+        // though for an active sub it usually exists. We fallback to now() just in case.
+        $timestamp = $stripeSubscription->current_period_end ?? time();
+        $endsAt = \Carbon\Carbon::createFromTimestamp($timestamp);
+
+        // 3. Update local DB
+        // We store 'cancelling' so the UI can show a different "Ending soon" state
+        $sub->update([
+            'stripe_status' => 'cancelling',
+            'trial_ends_at' => $endsAt,
+        ]);
+
+        return response()->json([
+            'message' => 'Subscription will cancel at the end of the billing period.',
+            'status' => 'cancelling',
+            'ends_at' => $sub->trial_ends_at ? $sub->trial_ends_at->format('M d, Y') : 'N/A',
+        ]);
+
+    } catch (\Stripe\Exception\ApiErrorException $e) {
+        return response()->json(['error' => 'Stripe Error: ' . $e->getMessage()], 402);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Server Error: ' . $e->getMessage()], 500);
+    }
+}
+    public function cancelOld(Request $request)
     {
         $user = $request->user();
         $sub = $user->activeSubscription;
@@ -190,28 +233,6 @@ class SubscriptionController extends Controller
             'message' => 'Subscription will cancel at the end of the billing period.',
             'ends_at' => $sub->trial_ends_at->format('M d, Y'),
         ]);
-    }
-
-    public function cancelOld(Request $request)
-    {
-        $user = $request->user();
-        $sub = $user->activeSubscription;
-
-        if (! $sub) {
-            return response()->json(['error' => 'No active subscription found'], 404);
-        }
-
-        $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
-
-        // Tell Stripe not to renew at the end of the cycle
-        $stripe->subscriptions->update($sub->stripe_subscription_id, [
-            'cancel_at_period_end' => true,
-        ]);
-
-        // Update local DB status
-        $sub->update(['stripe_status' => 'cancelling']);
-
-        return response()->json(['message' => 'Subscription will cancel at the end of the billing period.']);
     }
 
     public function status(Request $request)
