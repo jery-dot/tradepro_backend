@@ -52,7 +52,7 @@ class PlanSeeder extends Seeder
             'name' => 'Apprentice',
             'stripe_price_id' => env('STRIPE_APPRENTICE_PRICE_ID', 'prod_TzoOA2utngik0n'),
             'price' => 9.99,
-            'trial_days' => 90, // Free 3 months
+            // 'trial_days' => 90, // Free 3 months
             'features' => [
                 'Access to apprenticeship hub',
                 'Connect with mentors',
