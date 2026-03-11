@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('apprentice_profiles', function (Blueprint $table) {
-            $table->string('public_id')->unique()->after('id');
+            // $table->string('public_id')->unique()->after('id');
         });
     }
 };

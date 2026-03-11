@@ -20,8 +20,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('job_posts', function (Blueprint $table) {
-            $table->string('title')->nullable(false)->change();
-            $table->string('company_name')->nullable(false)->change();
+        //     $table->string('title')->change(); // back to NOT NULL
+        // $table->string('company_name')->change(); // back to NOT NULL
         });
     }
 
