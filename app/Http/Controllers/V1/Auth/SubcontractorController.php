@@ -28,7 +28,7 @@ class SubcontractorController extends Controller
         $validated = $request->validate([
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
-            'insurance_file' => 'nullable|file|mimes:pdf,jpg,png|max:5120',
+            'insurance_file' => 'nullable|file|mimes:pdf,jpg,png|max:51200',
         ]);
 
         $path = null;

@@ -48,7 +48,7 @@ class ContractorController extends Controller
         $validated = $request->validate([
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
-            'insurance_file' => 'nullable|file|mimes:pdf,jpg,png|max:5120',
+            'insurance_file' => 'nullable|file|mimes:pdf,jpg,png|max:51200',
             'job_requirements' => 'nullable|array',
             'job_requirements.*' => 'string', // slugs like "background_check_requirement"
         ]);
@@ -173,6 +173,6 @@ class ContractorController extends Controller
             'requirements' => $requirements,
         ]);
     }
-    
+
 
 }

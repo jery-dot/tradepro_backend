@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\UserSubscription;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Stripe\Webhook;
-use Stripe\Exception\SignatureVerificationException;
 
 class WebhookController extends Controller
 {
@@ -18,70 +18,70 @@ class WebhookController extends Controller
         $endpoint_secret = config('services.stripe.webhook_secret');
 
         try {
-            // Verify the signature to ensure the request is from Stripe
             $event = Webhook::constructEvent(
                 $payload, $sig_header, $endpoint_secret
             );
-        } catch (SignatureVerificationException $e) {
+        } catch (\UnexpectedValueException $e) {
+            return response()->json(['error' => 'Invalid payload'], 400);
+        } catch (\Stripe\Exception\SignatureVerificationException $e) {
             return response()->json(['error' => 'Invalid signature'], 400);
         }
 
-        // Handle the event types
+        // Add this to see what's happening in storage/logs/laravel.log
+        Log::info("Stripe Webhook Received: {$event->type}", ['id' => $event->id]);
+
+        // Handle the event
         switch ($event->type) {
-            case 'customer.subscription.updated':
-                $this->handleSubscriptionUpdated($event->data->object);
-                break;
-
-            case 'customer.subscription.deleted':
-                $this->handleSubscriptionDeleted($event->data->object);
-                break;
-
-            case 'invoice.payment_succeeded':
-                $this->handlePaymentSucceeded($event->data->object);
+            case 'invoice.paid':
+                $this->handleInvoicePaid($event->data->object);
                 break;
 
             case 'invoice.payment_failed':
                 $this->handlePaymentFailed($event->data->object);
+                break;
+
+            case 'customer.subscription.deleted':
+                $this->handleSubscriptionDeleted($event->data->object);
                 break;
         }
 
         return response()->json(['status' => 'success']);
     }
 
-    protected function handleSubscriptionUpdated($subscription)
+    protected function handleInvoicePaid($invoice)
     {
-        UserSubscription::where('stripe_subscription_id', $subscription->id)
-            ->update([
-                'stripe_status' => $subscription->status,
-                'trial_ends_at' => $subscription->trial_end ? now()->setTimestamp($subscription->trial_end) : null,
-                'ends_at' => $subscription->cancel_at ? now()->setTimestamp($subscription->cancel_at) : null,
-            ]);
-    }
+        $stripeSubscriptionId = $invoice->subscription;
+        $subscription = UserSubscription::where('stripe_subscription_id', $stripeSubscriptionId)->first();
 
-    protected function handleSubscriptionDeleted($subscription)
-    {
-        UserSubscription::where('stripe_subscription_id', $subscription->id)
-            ->update([
-                'stripe_status' => 'canceled',
-                'ends_at' => now(),
+        if ($subscription) {
+            $subscription->update([
+                'stripe_status' => 'active',
+                // Extend the period based on Stripe's data
+                'trial_ends_at' => now()->addMonth(), 
             ]);
-    }
-
-    protected function handlePaymentSucceeded($invoice)
-    {
-        // This is where you could log a "Transaction" or send a receipt email
-        if ($invoice->subscription) {
-            UserSubscription::where('stripe_subscription_id', $invoice->subscription)
-                ->update(['stripe_status' => 'active']);
         }
     }
 
     protected function handlePaymentFailed($invoice)
     {
-        // Mark the subscription as past_due so the Flutter app can show a warning
-        if ($invoice->subscription) {
-            UserSubscription::where('stripe_subscription_id', $invoice->subscription)
-                ->update(['stripe_status' => 'past_due']);
+        $subscription = UserSubscription::where('stripe_subscription_id', $invoice->subscription)->first();
+        if ($subscription) {
+            $subscription->update(['stripe_status' => 'past_due']);
+            // Here you could trigger an email to the user: "Your payment failed!"
+        }
+    }
+
+    protected function handleSubscriptionDeleted($stripeSubscription)
+    {
+        $subscription = UserSubscription::where('stripe_subscription_id', $stripeSubscription->id)->first();
+        if ($subscription) {
+            $subscription->update(['stripe_status' => 'canceled']);
+            
+            // Clear the active pointer on the User model
+            $user = User::find($subscription->user_id);
+            if ($user) {
+                $user->update(['active_subscription_id' => null]);
+            }
         }
     }
 }
