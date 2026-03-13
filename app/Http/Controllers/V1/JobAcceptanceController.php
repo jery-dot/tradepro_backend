@@ -128,7 +128,7 @@ class JobAcceptanceController extends Controller
                     'status' => in_array($user->id, $acceptedLaborIds) ? 'Working' : 'Applied',
                     'rating' => $user->rating ?? 0,
                     'profile_image_url' => $user->profile_image
-                            ? asset($user->profile_image)
+                            ? asset('profiles/'.$user->profile_image)
                             : null,
                     'location' => $user->city . ', ' . $user->state . ', ' . $user->country,
                     'email' => $user->email,

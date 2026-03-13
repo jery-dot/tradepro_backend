@@ -171,7 +171,7 @@ class ReviewController extends Controller
             return [
                 'reviewer_name' => $review->reviewer->name ?? '',
                 'reviewer_image_url' => $review->reviewer->profile_image
-                    ? asset($review->reviewer->profile_image)
+                    ? asset('profiles/' . $review->reviewer->profile_image)
                     : null,
                 'rating' => (int) $review->overall_rating,
                 'title' => $review->jobPost->title ?? null,
