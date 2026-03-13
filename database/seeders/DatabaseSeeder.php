@@ -24,11 +24,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CategorySeeder::class,
             ConditionSeeder::class,
-            JobRequirementSeeder::class,
-            PlanSeeder::class,
-            SkillSeeder::class,
             SpecializationSeeder::class,
+            JobRequirementSeeder::class,
             TradeInterestSeeder::class,
+            SkillSeeder::class,
         ]);
     }
 }

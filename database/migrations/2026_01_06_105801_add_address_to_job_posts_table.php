@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('job_posts', function (Blueprint $table) {
-            $table->dropColumn(['state', 'country']);
+            $this->dropColumn([ 'state', 'country' ]);
         });
     }
 };

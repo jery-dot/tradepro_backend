@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('opportunities', function (Blueprint $table) {
-            // $table->string('public_id')->unique()->after('id');
+            $table->dropColumn('public_id');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('opportunities', function (Blueprint $table) {
-            $table->dropColumn('public_id');
+            $table->string('public_id')->unique()->after('id');
         });
     }
 };
