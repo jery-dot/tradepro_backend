@@ -135,7 +135,7 @@ class ReviewController extends Controller
      * GET /api/reviews
      * Query: ?user_id=user_98765&page=1&limit=10
      */
-    public function listReviews(Request $request)
+    public function listReviewsOld(Request $request)
     {
         $authUser = auth('api')->user();
 
@@ -195,7 +195,7 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function listReviewsOld(Request $request)
+    public function listReviews(Request $request)
     {
         $userCode = $request->query('user_id');   // e.g. "user_98765"
         $jobCode = $request->query('job_id');    // e.g. "job_789456"
@@ -417,6 +417,77 @@ class ReviewController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function getUserReviews(Request $request)
+{
+    $authUser = auth('api')->user();
+
+    if (!$authUser) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Unauthorized'
+        ], 403);
+    }
+
+    $validated = $request->validate([
+        'user_id' => 'required',
+        'page' => 'nullable|integer|min:1',
+        'limit' => 'nullable|integer|min:1|max:100',
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Parse user_id (contractor_001, laborer_002)
+    |--------------------------------------------------------------------------
+    */
+
+    $targetUserId = (int)$validated['user_id'] ?? null;
+
+
+    $page = $validated['page'] ?? 1;
+    $limit = min($validated['limit'] ?? 10, 100);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fetch Reviews (User is Reviewee)
+    |--------------------------------------------------------------------------
+    */
+
+    $query = Review::with(['reviewer', 'jobPost'])
+        ->where('reviewee_id', $targetUserId)
+        ->orderByDesc('created_at');
+
+    $paginator = $query->paginate($limit, ['*'], 'page', $page);
+
+    $reviews = $paginator->getCollection()->map(function (Review $review) use ($authUser) {
+
+        $reviewer = $review->reviewer;
+
+        return [
+            'reviewer_name' => $reviewer?->name ?? 'Anonymous',
+            'reviewer_image_url' => $reviewer?->profile_image
+                ? asset($reviewer->profile_image)
+                : null,
+            'rating' => (int) $review->overall_rating,
+            'title' => $review->jobPost->title ?? 'Job Review',
+            'review_text' => $review->comment,
+            'review_date' => $review->created_at?->format('Y-m-d'),
+
+            // NEW FIELD
+            'has_submitted_review' => Review::where('reviewer_id', $authUser->id)
+                ->where('reviewee_id', $review->reviewee_id)
+                ->exists(),
+        ];
+    })->values();
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'User reviews fetched successfully.',
+        'total_results' => $paginator->total(),
+        'page' => $paginator->currentPage(),
+        'limit' => $paginator->perPage(),
+        'data' => $reviews,
+    ]);
+}
+    public function getUserReviewsOld(Request $request)
     {
         $user = auth('api')->user();
 
