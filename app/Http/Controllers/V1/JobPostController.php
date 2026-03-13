@@ -184,6 +184,7 @@ class JobPostController extends Controller
 
         $data = $jobs->map(function (JobPost $job) {
             return [
+                'id' => $job->id,
                 'job_id' => $job->job_code,
                 'title' => $job->specialization->name,
                 'description' => $job->job_description,
@@ -587,6 +588,7 @@ class JobPostController extends Controller
 
                 $owner->ratting = $companyRating;
             return [
+                'id' => $job->id,
                 'job_id' => $job->job_code,
                 'title' => $job->specialization->name,
                 'description' => $job->job_description,

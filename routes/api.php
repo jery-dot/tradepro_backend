@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\V1\ApprenticeProfileController;
 use App\Http\Controllers\V1\Auth\ApprenticeController;
 use App\Http\Controllers\V1\Auth\AuthController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\V1\Auth\ContractorController;
 use App\Http\Controllers\V1\Auth\LaborerController;
 use App\Http\Controllers\V1\Auth\SubcontractorController;
 use App\Http\Controllers\V1\FileUploadController;
+use App\Http\Controllers\V1\JobAcceptanceController;
 use App\Http\Controllers\V1\JobPostController;
 use App\Http\Controllers\V1\ListingController;
 use App\Http\Controllers\V1\ListingMetaController;
@@ -15,12 +17,10 @@ use App\Http\Controllers\V1\OpportunityController;
 use App\Http\Controllers\V1\PlanController;
 use App\Http\Controllers\V1\ReviewController;
 use App\Http\Controllers\V1\SpecializationController;
-use App\Http\Controllers\V1\StripeController;
-use App\Http\Controllers\V1\UserController;
 use App\Http\Controllers\V1\SubscriptionController;
+use App\Http\Controllers\V1\UserController;
 use App\Http\Controllers\V1\WebhookController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ContactController;
 
 // Public auth routes
 Route::prefix('auth')->controller(AuthController::class)->group(function () {
@@ -140,31 +140,42 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/get_user_reviews', [ReviewController::class, 'getUserReviews']);
 
-     Route::post('/delete_account', [UserController::class, 'deleteAccount']);
+    Route::post('/delete_account', [UserController::class, 'deleteAccount']);
 
-     Route::post('/send_notification', [NotificationController::class, 'sendNotification']);
+    Route::post('/send_notification', [NotificationController::class, 'sendNotification']);
 
-     // User settings
-      Route::get('/get_user_settings', [UserController::class, 'getUserSettings']);
+    // User settings
+    Route::get('/get_user_settings', [UserController::class, 'getUserSettings']);
 
-      // Update notification status
-      Route::post('/update_notification_status', [UserController::class, 'updateNotificationStatus']);
+    // Update notification status
+    Route::post('/update_notification_status', [UserController::class, 'updateNotificationStatus']);
 
-      // Update user location
-      Route::post('/update_location', [UserController::class, 'updateLocation']);
+    // Update user location
+    Route::post('/update_location', [UserController::class, 'updateLocation']);
 
-      // update user FCM token
-      Route::post('/update_fcm_token', [UserController::class, 'updateFcmToken']);
+    // update user FCM token
+    Route::post('/update_fcm_token', [UserController::class, 'updateFcmToken']);
+
+    // Get Profile
+    Route::get('/user/profile', [UserController::class, 'profile']);
+
+    // JobAccetance APi
+    Route::middleware('hirer')
+        ->controller(JobAcceptanceController::class)
+        ->group(function () {
+            Route::group(["prefix" => "job"], function(){
+                Route::post('accept', 'acceptJob'); // The Contractor or sub_contractor accepts the labore for his job-post
+            });
+            Route::group(["prefix" => "jobs"], function(){
+                Route::get('labors', 'getJobLabors');
+            });
+        });
 
 });
-
 
 Route::post('/contact/send', [ContactController::class, 'send']);
 
 Route::post('/upload', [FileUploadController::class, 'upload']);
-
-
-
 
 // Stripe
 Route::middleware('auth:api')->group(function () {
