@@ -241,6 +241,7 @@ class UserController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
         }
 
+        $reviewsCount = $user->reviews()->count();
         $ratingsCount = $user->receivedReviews()->count();
         $rating = round($user->receivedReviews()->avg('overall_rating') ?? 0, 1);
 
@@ -271,6 +272,7 @@ class UserController extends Controller
                 'uploaded_document' => $user->contractor->file_path,
                 'job_requirement' => $jobRequirementSlugs,
                 'ratings_count' => $ratingsCount,
+                'reviews_count' => $reviewsCount,
                 'created_at' => $user->created_at?->toIso8601String(),
                 'updated_at' => $user->updated_at?->toIso8601String(),
             ],

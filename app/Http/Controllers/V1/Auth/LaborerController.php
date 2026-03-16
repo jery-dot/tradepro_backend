@@ -119,6 +119,8 @@ class LaborerController extends Controller
         }
 
         // Rating can come from receivedReviews relationship
+        $reviewsCount = $user->reviews()->count();
+        $ratingsCount = $user->receivedReviews()->count();
         $rating = round($user->receivedReviews()->avg('overall_rating') ?? 0, 1);
 
         return response()->json([
@@ -136,6 +138,8 @@ class LaborerController extends Controller
                 'insurance' => (bool) $user->laborer->has_insurance,
                 'background_check_completed' => (bool) $user->laborer->background_check_completed,
                 'looking_for_apprenticeship' => (bool) $user->laborer->looking_for_apprenticeship,
+                'ratings_count' => $ratingsCount,
+                'reviews_count' => $reviewsCount,
                 'created_at' => $user->created_at?->toIso8601String(),
                 'updated_at' => $user->updated_at?->toIso8601String(),
             ],

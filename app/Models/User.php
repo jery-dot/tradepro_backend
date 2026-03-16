@@ -36,7 +36,7 @@ class User extends Authenticatable implements JWTSubject
         'active_subscription_id'
 
     ];
-    
+
     protected $hidden = [
         'password',
     ];
@@ -108,6 +108,10 @@ class User extends Authenticatable implements JWTSubject
     public function receivedReviews()
     {
         return $this->hasMany(Review::class, 'reviewee_id');
+    }
+
+    public function reviews(){
+        return $this->hasMany(Review::class, 'reviewer_id');
     }
 
     /**
