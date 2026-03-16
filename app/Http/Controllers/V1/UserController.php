@@ -379,6 +379,7 @@ class UserController extends Controller
             'data' => [
                 'id' => $user->id,
                 'full_name' => $user->name,
+                'email' => $user->email,
                 'role' => $user->role_label,
                 'rating' => $user->ratings_data['rating'],
                 'profile_image_url' => $user->profile_image,
@@ -515,7 +516,7 @@ class UserController extends Controller
                 'subscription_status' => $user->activeSubscription ? $user->activeSubscription->stripe_status : 'inactive',
             ],
         ]);
-    } 
+    }
 
     /**
      * Update Notification Status API.
