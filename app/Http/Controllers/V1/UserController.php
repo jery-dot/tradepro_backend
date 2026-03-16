@@ -260,6 +260,7 @@ class UserController extends Controller
             'data' => [
                 'id' => $user->id,
                 'full_name' => $user->name,
+                'email' => $user->email,
                 'role' => $user->role_label,
                 'rating' => $rating,
                 'profile_image_url' => $user->profile_image,
