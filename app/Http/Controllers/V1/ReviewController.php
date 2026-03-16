@@ -71,7 +71,7 @@ class ReviewController extends Controller
         }
 
         // Check that the laborer exist
-        $laborer = Laborer::where('user_id', $validated['labor_id'])->first();
+        $laborer = Laborer::where('id', $validated['labor_id'])->first();
         if (! $laborer) {
             return ApiResponse::warning('Laborer not found!', 404);
         }
