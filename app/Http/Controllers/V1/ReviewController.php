@@ -457,6 +457,9 @@ class ReviewController extends Controller
 
     $paginator = $query->paginate($limit, ['*'], 'page', $page);
 
+    //AVG
+    $averageRating = (float) $query->avg('overall_rating');
+
     $reviews = $paginator->getCollection()->map(function (Review $review) use ($authUser) {
 
         $reviewer = $review->reviewer;
@@ -465,7 +468,7 @@ class ReviewController extends Controller
             'review_id' => $review?->id,
             'reviewer_name' => $reviewer?->name ?? 'Anonymous',
             'reviewer_image_url' => $reviewer?->profile_image
-                ? asset($reviewer->profile_image)
+                ? asset('profiles/' . $reviewer->profile_image)
                 : null,
             'rating' => (int) $review->overall_rating,
             'title' => $review->jobPost->title ?? 'Job Review',
@@ -481,8 +484,10 @@ class ReviewController extends Controller
 
     return response()->json([
         'status' => 'success',
+        'review_count' => $reviews->count(),
         'message' => 'User reviews fetched successfully.',
         'total_results' => $paginator->total(),
+        'rating_count' => $averageRating,
         'page' => $paginator->currentPage(),
         'limit' => $paginator->perPage(),
         'data' => $reviews,
