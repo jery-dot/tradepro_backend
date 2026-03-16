@@ -462,6 +462,7 @@ class ReviewController extends Controller
         $reviewer = $review->reviewer;
 
         return [
+            'review_id' => $review?->id,
             'reviewer_name' => $reviewer?->name ?? 'Anonymous',
             'reviewer_image_url' => $reviewer?->profile_image
                 ? asset($reviewer->profile_image)
