@@ -123,6 +123,7 @@ class JobAcceptanceController extends Controller
 
                 return [
                     'id' => $user->id,
+                    'labor_id' => $user->laborer?->id,
                     'full_name' => $user->name,
                     'role' => 'Labor',
                     'status' => in_array($user->id, $acceptedLaborIds) ? 'Working' : 'Applied',

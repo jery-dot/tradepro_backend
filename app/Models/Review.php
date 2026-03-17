@@ -6,11 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Review extends Model
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Fillable Fields
+    |--------------------------------------------------------------------------
+    */
     protected $fillable = [
         'review_code',
         'job_post_id',
         'reviewer_id',
         'reviewee_id',
+        'review_type', // 🔥 added
         'overall_rating',
         'recommendation',
         'communication_rating',
@@ -21,16 +27,27 @@ class Review extends Model
         'average_rating',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'communication_rating'      => 'float',
-            'job_quality_rating'        => 'float',
-            'professionalism_rating'    => 'float',
-            'average_rating'            => 'float',
-            'job_complete_satisfaction' => 'boolean',
-        ];
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | Type Casting
+    |--------------------------------------------------------------------------
+    */
+    protected $casts = [
+        'overall_rating'              => 'integer',
+        'communication_rating'        => 'float',
+        'job_quality_rating'          => 'float',
+        'professionalism_rating'      => 'float',
+        'average_rating'              => 'float',
+        'job_complete_satisfaction'   => 'boolean',
+        'created_at'                  => 'datetime',
+        'updated_at'                  => 'datetime',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
 
     public function reviewer()
     {
@@ -47,4 +64,19 @@ class Review extends Model
         return $this->belongsTo(JobPost::class, 'job_post_id');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Helper Methods (Optional but Powerful 🔥)
+    |--------------------------------------------------------------------------
+    */
+
+    public function isContractorToLabor()
+    {
+        return $this->review_type === 'contractor_to_labor';
+    }
+
+    public function isLaborToContractor()
+    {
+        return $this->review_type === 'labor_to_contractor';
+    }
 }

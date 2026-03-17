@@ -4,11 +4,122 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+
 return new class extends Migration
 {
     /**
      * Run the migrations.
      */
+    public function up(): void
+    {
+        Schema::create('reviews', function (Blueprint $table) {
+            $table->id();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Public Identifier
+            |--------------------------------------------------------------------------
+            */
+            $table->string('review_code')->unique(); // e.g. review_123456
+
+            /*
+            |--------------------------------------------------------------------------
+            | Relationships
+            |--------------------------------------------------------------------------
+            */
+            $table->unsignedBigInteger('job_post_id');
+            $table->unsignedBigInteger('reviewer_id');
+            $table->unsignedBigInteger('reviewee_id');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Review Direction (IMPORTANT)
+            |--------------------------------------------------------------------------
+            */
+            $table->enum('review_type', [
+                'contractor_to_labor',
+                'labor_to_contractor'
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Ratings
+            |--------------------------------------------------------------------------
+            */
+            $table->unsignedTinyInteger('overall_rating'); // 1–5
+
+            $table->decimal('communication_rating', 3, 1)->nullable();
+            $table->decimal('job_quality_rating', 3, 1)->nullable();
+            $table->decimal('professionalism_rating', 3, 1)->nullable();
+
+            $table->decimal('average_rating', 3, 1)->nullable();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Recommendation & Feedback
+            |--------------------------------------------------------------------------
+            */
+            $table->string('recommendation')->nullable(); // recommended / not_recommended
+            $table->boolean('job_complete_satisfaction')->default(false);
+            $table->text('comment')->nullable();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Timestamps
+            |--------------------------------------------------------------------------
+            */
+            $table->timestamps();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Constraints
+            |--------------------------------------------------------------------------
+            */
+
+            // Prevent duplicate review per job per user
+            // $table->unique(['job_post_id', 'reviewer_id'], 'unique_review_per_job');
+            $table->unique(['job_post_id', 'reviewer_id', 'reviewee_id'], 'unique_review_per_pair');
+
+            // Foreign Keys
+            $table->foreign('job_post_id')
+                ->references('id')
+                ->on('job_posts')
+                ->onDelete('cascade');
+
+            $table->foreign('reviewer_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
+
+            $table->foreign('reviewee_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Indexes (Performance Optimization)
+            |--------------------------------------------------------------------------
+            */
+            $table->index('job_post_id');
+            $table->index('reviewer_id');
+            $table->index('reviewee_id');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('reviews');
+    }
+};
+
+
+/*return new class extends Migration
+{
+
     public function up(): void
     {
         Schema::create('reviews', function (Blueprint $table) {
@@ -45,11 +156,8 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('reviews');
     }
-};
+};*/
