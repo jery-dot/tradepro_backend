@@ -377,7 +377,7 @@ class ReviewController extends Controller
 
         $paginator = $query->paginate($limit, ['*'], 'page', $page);
 
-        $reviews = collect($paginator->items())->map(function ($review) use ($authUser) {
+        $reviews = collect($paginator->items())->map(function ($review) use ($revieweeId) {
 
             return [
                 'reviewer_name' => $review->reviewer->name ?? '',
@@ -390,9 +390,11 @@ class ReviewController extends Controller
                 'review_date' => $review->created_at->format('Y-m-d'),
 
                 // check if logged-in user has submitted review for this job
-                'has_submitted_review' => Review::where('reviewer_id', $authUser->id)
-                    ->where('job_post_id', $review->job_post_id)
-                    ->exists(),
+                'has_submitted_review' => Review::where('reviewer_id', $review->reviewer_id)
+                        ->where('reviewee_id', $revieweeId) // contractor id
+                        ->where('job_post_id', $review->job_post_id)
+                        ->where('review_type', 'labor_to_contractor')
+                        ->exists(),
             ];
         });
 
@@ -687,9 +689,11 @@ class ReviewController extends Controller
                 'review_date' => $review->created_at?->format('Y-m-d'),
 
                 // NEW FIELD
-                'has_submitted_review' => Review::where('reviewer_id', $authUser->id)
-                    ->where('reviewee_id', $review->reviewee_id)
-                    ->exists(),
+                'has_submitted_review' => Review::where('reviewer_id', $review->reviewee_id)
+                        ->where('reviewee_id', $review->reviewer_id) // contractor id
+                        ->where('job_post_id', $review->job_post_id)
+                        ->where('review_type', 'labor_to_contractor')
+                        ->exists(),
             ];
         })->values();
 
