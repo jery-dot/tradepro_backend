@@ -73,7 +73,7 @@
 <div class="card">
     <div class="ch">
         <div class="ct">All Reviews</div>
-        <form method="GET" action="{{ route('admin.reviews') }}" style="display:flex;gap:7px">
+        {{-- <form method="GET" action="{{ route('admin.reviews') }}" style="display:flex;gap:7px">
             <select class="fsel" name="rating" onchange="this.form.submit()">
                 <option value="all">All Ratings</option>
                 <option value="5" {{ request('rating') === '5' ? 'selected':'' }}>5 Stars</option>
@@ -87,7 +87,7 @@
                 <option value="subcontractor" {{ request('type') === 'subcontractor' ? 'selected':'' }}>Sub-contractor</option>
                 <option value="labour"        {{ request('type') === 'labour'        ? 'selected':'' }}>Labour</option>
             </select>
-        </form>
+        </form> --}}
     </div>
 
     <div class="tw">
@@ -100,7 +100,7 @@
                     <th>Communication</th>
                     <th>Job Quality</th>
                     <th>Payment</th>
-                    <th>Work Env.</th>
+                    {{-- <th>Work Env.</th> --}}
                     <th>Recommend</th>
                     <th>Comments</th>
                     <th>Date</th>
@@ -109,15 +109,22 @@
             </thead>
             <tbody>
                 @forelse($reviews as $review)
-                    @php
-                        $typeBadge = ['contractor'=>'bn','subcontractor'=>'bo','labour'=>'bg'][$review->reviewed_type] ?? 'bgr';
-                        $typeLabel = ['contractor'=>'Contractor','subcontractor'=>'Sub-contractor','labour'=>'Labour'][$review->reviewed_type] ?? $review->reviewed_type;
-                        $starsHtml = str_repeat('★', $review->overall_rating) . str_repeat('☆', 5 - $review->overall_rating);
+                   @php
+                        // 1. Fetch the user type enum directly from the reviewee relation
+                        $userTypeEnum = $review->reviewee?->user_type;
+
+                        // 2. Resolve badge and label natively using the Enum methods
+                        $typeBadge = $userTypeEnum ? $userTypeEnum->badgeClass() : 'bgr';
+                        $typeLabel = $userTypeEnum ? $userTypeEnum->label() : 'Unknown';
+
+                        // 3. Generate HTML rating stars safely
+                        $ratingScore = min(max((int)$review->overall_rating, 0), 5);
+                        $starsHtml = str_repeat('★', $ratingScore) . str_repeat('☆', 5 - $ratingScore);
                     @endphp
                     <tr>
-                        <td style="font-size:12.5px;font-weight:600">{{ $review->reviewer_name }}</td>
+                        <td style="font-size:12.5px;font-weight:600">{{ $review->reviewer->name }}</td>
                         <td style="font-size:12.5px;color:var(--grey)">
-                            {{ $review->reviewed_name }}
+                            {{ $review->reviewee->name }}
                             <br>
                             <span class="bdg {{ $typeBadge }}" style="font-size:10px">{{ $typeLabel }}</span>
                         </td>
@@ -127,12 +134,20 @@
                         </td>
                         <td style="text-align:center;font-size:12px;font-weight:600">{{ $review->communication_rating }}/5</td>
                         <td style="text-align:center;font-size:12px;font-weight:600">{{ $review->job_quality_rating }}/5</td>
-                        <td style="text-align:center;font-size:12px;font-weight:600">{{ $review->payment_timeliness_rating }}/5</td>
-                        <td style="text-align:center;font-size:12px;font-weight:600">{{ $review->work_environment_rating }}/5</td>
+                        <td style="text-align:center;font-size:12px;font-weight:600">
+                            @php
+                                $currencySymbol = ['USD' => '$', 'EUR' => '€', 'GBP' => '£'][$review->jobPost->pay_rate_currency] ?? $review->jobPost->pay_rate_currency;
+                                $rateTypeShort  = ['hour' => 'hr', 'monthly' => 'mo', 'yearly' => 'yr'][$review->jobPost->pay_rate_type] ?? $review->jobPost->pay_rate_type;
+                            @endphp
+                            
+                            {{ $currencySymbol }}{{ $review->jobPost->pay_rate_amount }}/{{ $rateTypeShort }}
+                        </td>
+                        {{-- <td style="text-align:center;font-size:12px;font-weight:600">{{ $review->work_environment_rating }}/5</td> --}}
                         <td style="text-align:center">
-                            <span class="bdg {{ $review->would_recommend ? 'bg' : 'br' }}">
-                                {{ $review->would_recommend ? 'Yes' : 'No' }}
+                            <span class="bdg {{ $review->recommendation == 'recommended' ? 'bg' : 'br' }}">
+                                {{ $review->recommendation == 'recommended' ? 'Yes' : 'No' }}
                             </span>
+                            {{-- {{ $review->recommendation }} --}}
                         </td>
                         <td style="font-size:12px;color:var(--grey);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
                             title="{{ $review->comment }}">
@@ -141,8 +156,8 @@
                         <td style="font-size:12px;color:var(--grey-l)">{{ $review->created_at->format('d M Y') }}</td>
                         <td>
                             <div style="display:flex;gap:4px">
-                                <a href="{{ route('admin.reviews.show', $review->id) }}"
-                                   class="btn btn-ol btn-xs">View</a>
+                                {{-- <a href="{{ route('admin.reviews.show', $review->id) }}"
+                                   class="btn btn-ol btn-xs">View</a> --}}
                                 <form method="POST"
                                       action="{{ route('admin.reviews.destroy', $review->id) }}"
                                       onsubmit="return confirm('Remove this review?')">
