@@ -25,6 +25,16 @@ return Application::configure(basePath: dirname(__DIR__))
             'hirer' => EnsureHirer::class,
             'worker' => EnsureWorker::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'api/stripe/webhook',
+        ]);
+        // 1️⃣ Redirection automatique pour les invités
+        $middleware->redirectTo(fn () => route('admin.login'));
+
+        // 2️⃣ AJOUTEZ CECI : Lier le nom 'admin' à votre classe de Middleware 👇
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 

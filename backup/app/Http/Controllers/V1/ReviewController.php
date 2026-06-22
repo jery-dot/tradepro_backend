@@ -1,0 +1,778 @@
+<?php
+
+namespace App\Http\Controllers\V1;
+
+use App\Helpers\ApiResponse;
+use App\Http\Controllers\Controller;
+use App\Models\JobAcceptance;
+use App\Models\JobPost;
+use App\Models\Laborer;
+use App\Models\Review;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+
+class ReviewController extends Controller
+{
+    /**
+     * POST /api/reviews_submit
+     *
+     * Headers:
+     *  - Authorization: Bearer <ACCESS_TOKEN>
+     *  - Content-Type: application/json
+     *
+     * Body:
+     * {
+     *   "job_id": "job_789456",
+     *   "reviewer_id": "user_12345",
+     *   "overall_rating": 4,
+     *   "recommendation": "recommended",
+     *   "ratings": {
+     *     "communication": 4.0,
+     *     "job_quality": 3.5,
+     *     "professionalism": 4.5
+     *   },
+     *   "job_complete_satisfaction": true,
+     *   "comment": "Excellent work! ..."
+     * }
+     */
+    public function submitReview(Request $request)
+    {
+        $authUser = auth('api')->user();
+
+        if (! $authUser) {
+            return ApiResponse::error('Unauthorized', 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'job_id' => 'required|string',
+
+                // Role-based inputs
+                'labor_id' => 'nullable|integer',
+                'contractor_id' => 'nullable|integer',
+
+                'overall_rating' => 'required|integer|min:1|max:5',
+                'recommendation' => 'required|string|in:recommended,not_recommended',
+
+                'ratings' => 'required|array',
+                'ratings.communication' => 'required|numeric|min:0|max:5',
+                'ratings.job_quality' => 'required|numeric|min:0|max:5',
+                'ratings.professionalism' => 'required|numeric|min:0|max:5',
+
+                'job_complete_satisfaction' => 'required|boolean',
+                'comment' => 'nullable|string',
+            ]);
+        } catch (ValidationException $e) {
+            return ApiResponse::error('Validation error', 422, $e->errors());
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 1️⃣ Get Job
+        |--------------------------------------------------------------------------
+        */
+        $jobPost = JobPost::where('job_code', $validated['job_id'])->first();
+
+        if (! $jobPost) {
+            return ApiResponse::warning('Job not found', 404);
+        }
+
+        if ($jobPost->status !== 'completed') {
+            return ApiResponse::warning('Reviews allowed only for completed jobs.', 400);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2️⃣ Identify Roles
+        |--------------------------------------------------------------------------
+        */
+        $isContractor = $jobPost->user_id == $authUser->id;
+
+        $isLabor = JobAcceptance::where('job_post_id', $jobPost->id)
+            ->where('labor_id', $authUser->id)
+            ->exists();
+
+        if (! $isContractor && ! $isLabor) {
+            return ApiResponse::warning('You are not part of this job.', 403);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 3️⃣ Determine Reviewee
+        |--------------------------------------------------------------------------
+        */
+        if ($isContractor) {
+
+            if (empty($validated['labor_id'])) {
+                return ApiResponse::warning('labor_id is required.', 400);
+            }
+
+            $revieweeId = $validated['labor_id'];
+
+            if ($revieweeId == $authUser->id) {
+                return ApiResponse::warning('You cannot review yourself.', 400);
+            }
+
+            // Validate labor belongs to this job
+            $validLabor = JobAcceptance::where('job_post_id', $jobPost->id)
+                ->where('labor_id', $revieweeId)
+                ->exists();
+
+            if (! $validLabor) {
+                return ApiResponse::warning('Invalid labor for this job.', 400);
+            }
+
+            $reviewType = 'contractor_to_labor';
+
+        } else {
+
+            if (empty($validated['contractor_id'])) {
+                return ApiResponse::warning('contractor_id is required.', 400);
+            }
+
+            $revieweeId = $validated['contractor_id'];
+
+            if ($revieweeId == $authUser->id) {
+                return ApiResponse::warning('You cannot review yourself.', 400);
+            }
+
+            // Must be job owner
+            if ($revieweeId != $jobPost->user_id) {
+                return ApiResponse::warning('Invalid contractor.', 400);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 🔥 CRITICAL RULE
+            | Contractor must review THIS labor first
+            |--------------------------------------------------------------------------
+            */
+            $contractorReviewed = Review::where('job_post_id', $jobPost->id)
+                ->where('reviewer_id', $jobPost->user_id)
+                ->where('reviewee_id', $authUser->id)
+                ->exists();
+
+            if (! $contractorReviewed) {
+                return ApiResponse::warning(
+                    'You can review only after contractor submits review for you.',
+                    400
+                );
+            }
+
+            $reviewType = 'labor_to_contractor';
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 4️⃣ Prevent Duplicate Review (PER PAIR 🔥)
+        |--------------------------------------------------------------------------
+        */
+        $alreadyReviewed = Review::where('job_post_id', $jobPost->id)
+            ->where('reviewer_id', $authUser->id)
+            ->where('reviewee_id', $revieweeId)
+            ->exists();
+
+        if ($alreadyReviewed) {
+            return ApiResponse::warning(
+                'You have already submitted a review for this user in this job.',
+                400
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 5️⃣ Calculate Average Rating
+        |--------------------------------------------------------------------------
+        */
+        $ratings = $validated['ratings'];
+
+        $average = round(
+            (
+                $ratings['communication'] +
+                $ratings['job_quality'] +
+                $ratings['professionalism']
+            ) / 3,
+            1
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 6️⃣ Create Review
+        |--------------------------------------------------------------------------
+        */
+        $review = Review::create([
+            'review_code' => 'review_'.mt_rand(100000, 999999),
+            'job_post_id' => $jobPost->id,
+            'reviewer_id' => $authUser->id,
+            'reviewee_id' => $revieweeId,
+            'review_type' => $reviewType,
+            'overall_rating' => $validated['overall_rating'],
+            'recommendation' => $validated['recommendation'],
+            'communication_rating' => $ratings['communication'],
+            'job_quality_rating' => $ratings['job_quality'],
+            'professionalism_rating' => $ratings['professionalism'],
+            'job_complete_satisfaction' => $validated['job_complete_satisfaction'],
+            'comment' => $validated['comment'] ?? null,
+            'average_rating' => $average,
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 7️⃣ Update User Overall Rating
+        |--------------------------------------------------------------------------
+        */
+        // $newAvg = Review::where('reviewee_id', $revieweeId)
+        //     ->avg('overall_rating');
+
+        // User::where('id', $revieweeId)
+        //     ->update(['rating' => round($newAvg, 1)]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 8️⃣ Response
+        |--------------------------------------------------------------------------
+        */
+        return ApiResponse::success('Review submitted successfully.', [
+            'data' => [
+                'review_id' => $review->review_code,
+                'job_id' => $jobPost->job_code,
+                'review_type' => $reviewType,
+                'reviewee_id' => $revieweeId,
+                'overall_rating' => (int) $review->overall_rating,
+                'average_rating' => (float) $review->average_rating,
+                'created_at' => $review->created_at?->toIso8601String(),
+            ],
+        ]);
+    }
+
+    public function submitReviewOld(Request $request)
+    {
+        $authUser = auth('api')->user();
+
+        try {
+            $validated = $request->validate([
+                'job_id' => 'required|string',
+                'labor_id' => 'required',  // Newlly added
+                'reviewer_id' => 'required',  // external code; we’ll map it
+                'overall_rating' => 'required|integer|min:1|max:5',
+                'recommendation' => 'required|string|in:recommended,not_recommended',
+                'ratings' => 'required|array',
+                'ratings.communication' => 'required|numeric|min:0|max:5',
+                'ratings.job_quality' => 'required|numeric|min:0|max:5',
+                'ratings.professionalism' => 'required|numeric|min:0|max:5',
+                'job_complete_satisfaction' => 'required|boolean',
+                'comment' => 'nullable|string',
+            ]); // Nested validation using dot-notation for the ratings object.[web:18][web:190]
+        } catch (ValidationException $e) {
+            return ApiResponse::error('Validation error', 422, $e->errors());
+        }
+
+        // 1. Resolve job by job_code
+        $jobPost = JobPost::where('job_code', $validated['job_id'])->first();
+
+        if (! $jobPost) {
+            return ApiResponse::warning('Job not found', 404);
+        }
+
+        // Check for the job status :
+        // - Only allow reviews for completed jobs
+        if ($jobPost->status !== 'completed') {
+            return ApiResponse::warning('Reviews can only be submitted for completed jobs.', 400);
+        }
+
+        // Check that the laborer exist
+        $laborer = Laborer::where('id', $validated['labor_id'])->first();
+        if (! $laborer) {
+            return ApiResponse::warning('Laborer not found!', 404);
+        }
+
+        // 2. Resolve reviewer by some external code if needed.
+        // For now assume reviewer_id matches auth user id (to avoid mismatch).
+        if ((int) $authUser->id !== $validated['reviewer_id']) {
+            // Optionally enforce that only the logged-in user can submit as themselves
+            return ApiResponse::warning('Unauthorized reviewer', 403);
+        }
+
+        $reviewerId = $authUser->id;
+
+        // 3. Compute average from ratings
+        $ratings = $validated['ratings'];
+
+        $average = round(
+            (
+                $ratings['communication'] +
+                $ratings['job_quality'] +
+                $ratings['professionalism']
+            ) / 3,
+            1
+        ); // Average calculation and rounding is straightforward collection math.[web:425][web:417]
+
+        // 4. Generate review_code like "review_456789"
+        $reviewCode = 'review_'.mt_rand(100000, 999999);
+
+        // 5. Create review
+        $review = Review::create([
+            'review_code' => $reviewCode,
+            'job_post_id' => $jobPost->id,
+            'reviewer_id' => $reviewerId,
+            'reviewee_id' => $validated['labor_id'], // the laborer ID
+            'overall_rating' => $validated['overall_rating'],
+            'recommendation' => $validated['recommendation'],
+            'communication_rating' => $ratings['communication'],
+            'job_quality_rating' => $ratings['job_quality'],
+            'professionalism_rating' => $ratings['professionalism'],
+            'job_complete_satisfaction' => $validated['job_complete_satisfaction'],
+            'comment' => $validated['comment'] ?? null,
+            'average_rating' => $average,
+        ]);
+
+        // 6. Build response
+        $data = [
+            'review_id' => $review->review_code,
+            'job_id' => $jobPost->job_code,
+            'overall_rating' => (int) $review->overall_rating,
+            'recommendation' => $review->recommendation,
+            'average_rating' => (float) $review->average_rating,
+            'created_at' => $review->created_at?->toIso8601String(),
+        ];
+
+        return ApiResponse::success('Review submitted successfully.', [
+            'data' => $data,
+        ]);
+    }
+
+    /**
+     * GET /api/reviews
+     * Query: ?user_id=user_98765&page=1&limit=10
+     */
+    public function listReviewsOld(Request $request)
+    {
+        $authUser = auth('api')->user();
+
+        if (! $authUser) {
+            return ApiResponse::error('Unauthorized', 403);
+        }
+
+        $userCode = $request->query('user_id'); // contractor_001
+        $page = (int) $request->query('page', 1);
+        $limit = (int) $request->query('limit', 10);
+        $limit = $limit > 0 ? min($limit, 100) : 10;
+
+        if (! $userCode) {
+            return ApiResponse::error('Invalid or missing user_id', 422);
+        }
+
+        // Extract numeric ID (contractor_001 → 1)
+        $revieweeId = (int) filter_var($userCode, FILTER_SANITIZE_NUMBER_INT);
+
+        $reviewee = User::find($revieweeId);
+        if (! $reviewee) {
+            return ApiResponse::error('User not found', 404);
+        }
+
+        $query = Review::with(['reviewer', 'jobPost'])
+            ->where('reviewee_id', $revieweeId)
+            ->orderByDesc('created_at');
+
+        $paginator = $query->paginate($limit, ['*'], 'page', $page);
+
+        $reviews = collect($paginator->items())->map(function ($review) use ($revieweeId) {
+
+            return [
+                'reviewer_name' => $review->reviewer->name ?? '',
+                'reviewer_image_url' => $review->reviewer->profile_image
+                    ? asset('profiles/'.$review->reviewer->profile_image)
+                    : null,
+                'rating' => (int) $review->overall_rating,
+                'title' => $review->jobPost->title ?? null,
+                'review_text' => $review->comment,
+                'review_date' => $review->created_at->format('Y-m-d'),
+
+                // check if logged-in user has submitted review for this job
+                'has_submitted_review' => Review::where('reviewer_id', $review->reviewer_id)
+                        ->where('reviewee_id', $revieweeId) // contractor id
+                        ->where('job_post_id', $review->job_post_id)
+                        ->where('review_type', 'labor_to_contractor')
+                        ->exists(),
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'User reviews fetched successfully.',
+            'total_results' => $paginator->total(),
+            'page' => $paginator->currentPage(),
+            'limit' => $paginator->perPage(),
+            'data' => $reviews,
+        ]);
+    }
+
+    public function listReviews(Request $request)
+    {
+        $userCode = $request->query('user_id');   // e.g. "user_98765"
+        $jobCode = $request->query('job_id');    // e.g. "job_789456"
+        $page = (int) $request->query('page', 1);
+        $limit = (int) $request->query('limit', 10);
+        $limit = $limit > 0 ? min($limit, 100) : 10; // safe per-page limit.[web:296][web:479]
+
+        if (! $userCode) {
+            return ApiResponse::error('Invalid or missing user_id', 422);
+        }
+
+        $revieweeId = (int) str_replace('user_', '', $userCode);
+
+        $reviewee = User::find($revieweeId);
+        if (! $reviewee) {
+            return ApiResponse::error('User not found', 404);
+        }
+
+        // Base query: reviews received by this user
+        $query = Review::with(['reviewer', 'jobPost'])
+            ->where('reviewee_id', $revieweeId);
+
+        // Optional job filter
+        if ($jobCode) {
+            $jobPostId = JobPost::where('job_code', $jobCode)->value('id');
+            if ($jobPostId) {
+                $query->where('job_post_id', $jobPostId);
+            } else {
+                // No such job: return empty list but keep profile block valid
+                $paginator = $query->paginate($limit, ['*'], 'page', $page);
+
+                return $this->buildReviewResponse($reviewee, $paginator, $userCode);
+            }
+        }
+
+        $query->orderByDesc('created_at'); // latest first.[web:375]
+
+        $paginator = $query->paginate($limit, ['*'], 'page', $page);
+
+        return $this->buildReviewResponse($reviewee, $paginator, $userCode);
+    }
+
+    protected function buildReviewResponse(User $reviewee, \Illuminate\Contracts\Pagination\LengthAwarePaginator $paginator, string $userCode)
+    {
+        $reviewsCollection = $paginator->getCollection();
+
+        // Summary stats over ALL reviews for this user (not just this page / job)
+        $averageRating = round(
+            $reviewee->receivedReviews()->avg('overall_rating') ?? 0,
+            1
+        ); // using avg() on relationship is standard for ratings.[web:436][web:484]
+
+        $totalReviews = $reviewee->receivedReviews()->count();
+
+        $recentlyReviewed = $reviewee->receivedReviews()
+            ->where('created_at', '>=', now()->subDays(30))
+            ->exists(); // simple “recently reviewed” flag based on last 30 days.[web:489]
+
+        $reviews = $reviewsCollection->map(function (Review $review) {
+            $reviewer = $review->reviewer;
+            $jobPost = $review->jobPost;
+
+            return [
+                'review_id' => $review->review_code,
+                'reviewer' => [
+                    'user_id' => $reviewer ? 'user_'.$reviewer->id : null,
+                    'name' => $reviewer->name ?? '',
+                    'profile_image' => $reviewer->profile_image ?? null,
+                ],
+                'job_title' => $jobPost->title ?? '',
+                'rating' => (int) $review->overall_rating,
+                'comment' => $review->comment,
+                'created_at' => $review->created_at?->toIso8601String(),
+            ];
+        })->values()->all(); // mapping via collection keeps controller logic clean.[web:375]
+
+        $data = [
+            'profile' => [
+                'user_id' => $userCode,
+                'name' => $reviewee->name ?? '',
+                'profile_image' => $reviewee->profile_image ?? null,
+                'average_rating' => $averageRating,
+                'total_reviews' => $totalReviews,
+                'recently_reviewed' => (bool) $recentlyReviewed,
+            ],
+            'reviews' => $reviews,
+            'pagination' => [
+                'page' => $paginator->currentPage(),
+                'limit' => $paginator->perPage(),
+                'total_pages' => $paginator->lastPage(),
+                'total_reviews' => $paginator->total(),
+            ],
+        ];
+
+        return ApiResponse::success('', ['data' => $data]);
+    }
+
+    public function listReviewsOld0(Request $request)
+    {
+        // 1. Parse and validate query
+        $userId = $request->query('user_id'); // e.g. "user_98765"
+        $page = (int) $request->query('page', 1);
+        $limit = (int) $request->query('limit', 10);
+        $limit = $limit > 0 ? min($limit, 100) : 10; // cap page size.[web:296][web:432]
+
+        if (! $userId) {
+            return ApiResponse::error('user_id is required', 422);
+        }
+
+        // For now assume external user code is "user_{$id}"
+        if (! str_starts_with($userId, 'user_')) {
+            return ApiResponse::error('Invalid user_id format', 422);
+        }
+        $revieweeId = (int) str_replace('user_', '', $userId);
+
+        // 2. Load reviewee profile
+        $reviewee = User::find($revieweeId);
+        if (! $reviewee) {
+            return ApiResponse::error('User not found', 404);
+        }
+
+        // 3. Query reviews where this user is reviewee
+        $query = Review::with(['reviewer', 'jobPost'])
+            ->where('reviewee_id', $revieweeId)
+            ->orderByDesc('created_at');
+
+        $paginator = $query->paginate($limit, ['*'], 'page', $page); // standard paginator.[web:296][web:305]
+
+        $reviewsCollection = $paginator->getCollection();
+
+        // 4. Compute summary stats
+        $averageRating = round(
+            $reviewee->receivedReviews()->avg('overall_rating') ?? 0,
+            1
+        ); // avg() is the typical way to get average rating per user.[web:433][web:436]
+
+        $totalReviews = $reviewee->receivedReviews()->count();
+
+        // Simple heuristic for "recently_reviewed"
+        $recentlyReviewed = $reviewee->receivedReviews()
+            ->where('created_at', '>=', now()->subDays(30))
+            ->exists();
+
+        // 5. Map reviews
+        $reviews = $reviewsCollection->map(function (Review $review) {
+            $reviewer = $review->reviewer;
+            $jobPost = $review->jobPost;
+
+            return [
+                'review_id' => $review->review_code,
+                'reviewer' => [
+                    'user_id' => 'user_'.$reviewer?->id,
+                    'name' => $reviewer?->name ?? '',
+                    'profile_image' => $reviewer?->profile_image ?? null,
+                ],
+                'job_title' => $jobPost?->title ?? '',
+                'rating' => (int) $review->overall_rating,
+                'comment' => $review->comment,
+                'created_at' => $review->created_at?->toIso8601String(),
+            ];
+        })->values()->all(); // map() is standard for shaping Eloquent data for APIs.[web:394][web:388]
+
+        // 6. Build response payload
+        $data = [
+            'profile' => [
+                'user_id' => $userId,
+                'name' => $reviewee->name ?? '',
+                'profile_image' => $reviewee->profile_image ?? null,
+                'average_rating' => $averageRating,
+                'total_reviews' => $totalReviews,
+                'recently_reviewed' => (bool) $recentlyReviewed,
+            ],
+            'reviews' => $reviews,
+            'pagination' => [
+                'page' => $paginator->currentPage(),
+                'limit' => $paginator->perPage(),
+                'total_pages' => $paginator->lastPage(),
+                'total_reviews' => $paginator->total(),
+            ],
+        ];
+
+        return ApiResponse::success('', ['data' => $data]);
+    }
+
+    /**
+     * Get all reviews for a specific user (Based on User ID).
+     *
+     * Endpoint:
+     * GET /api/get_user_reviews
+     *
+     * Headers:
+     *   Authorization: Bearer <ACCESS_TOKEN>
+     *   Content-Type: application/json
+     *
+     * Query Parameters:
+     *   user_id=contractor_001  (Required - e.g. contractor_001, laborer_002, apprentice_003)
+     *   page=1                 (Optional - default: 1)
+     *   limit=4                (Optional - default: 10, max: 100)
+     *
+     * Response:
+     * {
+     *   "status": "success",
+     *   "message": "User reviews fetched successfully.",
+     *   "total_results": 22,
+     *   "page": 1,
+     *   "limit": 4,
+     *   "data": [
+     *     {
+     *       "reviewer_name": "Raj Mohal",
+     *       "reviewer_image_url": "https://example.com/profile/reviewer_001.png",
+     *       "rating": 5,
+     *       "title": "Kitchen Renovation",
+     *       "review_text": "Excellent work! Very professional...",
+     *       "review_date": "2025-10-01"
+     *     }
+     *   ]
+     * }
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUserReviews(Request $request)
+    {
+        $authUser = auth('api')->user();
+
+        if (! $authUser) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'user_id' => 'required',
+            'page' => 'nullable|integer|min:1',
+            'limit' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Parse user_id (contractor_001, laborer_002)
+        |--------------------------------------------------------------------------
+        */
+
+        $targetUserId = (int) $validated['user_id'] ?? null;
+
+        $page = $validated['page'] ?? 1;
+        $limit = min($validated['limit'] ?? 10, 100);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Fetch Reviews (User is Reviewee)
+        |--------------------------------------------------------------------------
+        */
+
+        $query = Review::with(['reviewer', 'jobPost'])
+            ->where('reviewee_id', $targetUserId)
+            ->orderByDesc('created_at');
+
+        $paginator = $query->paginate($limit, ['*'], 'page', $page);
+
+        $reviews = $paginator->getCollection()->map(function (Review $review) use ($authUser) {
+
+            $reviewer = $review->reviewer;
+            $reviewee = $review->reviewee;
+
+            return [
+                'job_id' => $review?->jobPost->job_code,
+                'review_id' => $review?->id,
+                'reviewer_id' => $reviewer?->id ?? '',
+                'reviewee_id' => $reviewee?->id ?? '',
+                'reviewer_name' => $reviewer?->name ?? 'Anonymous',
+                'reviewer_image_url' => $reviewer?->profile_image
+                    ? asset('profiles/'.$reviewer->profile_image)
+                    : null,
+                'rating' => (int) $review->overall_rating,
+                'title' => $review->jobPost->title ?? 'Job Review',
+                'review_text' => $review->comment,
+                'review_date' => $review->created_at?->format('Y-m-d'),
+
+                // NEW FIELD
+                'has_submitted_review' => Review::where('reviewer_id', $review->reviewee_id)
+                        ->where('reviewee_id', $review->reviewer_id) // contractor id
+                        ->where('job_post_id', $review->job_post_id)
+                        ->where('review_type', 'labor_to_contractor')
+                        ->exists(),
+            ];
+        })->values();
+
+        return response()->json([
+            'status' => 'success',
+            'review_count' => $reviews->count(),
+            'message' => 'User reviews fetched successfully.',
+            'total_results' => $paginator->total(),
+            'page' => $paginator->currentPage(),
+            'limit' => $paginator->perPage(),
+            'data' => $reviews,
+        ]);
+    }
+
+    public function getUserReviewsOld(Request $request)
+    {
+        $user = auth('api')->user();
+
+        $validated = $request->validate([
+            'user_id' => 'required',
+            'page' => 'integer|min:1',
+            'limit' => 'integer|min:1|max:100',
+        ]);
+
+        // Parse user_id (contractor_001, laborer_002, etc.)
+        // $targetUserId = $this->parseUserId($validated['user_id']);
+        $targetUserId = ($validated['user_id']);
+
+        // if (! $targetUserId) {
+        //     return response()->json([
+        //         'status' => 'error',
+        //         'message' => 'Invalid user_id format.',
+        //     ], 422);
+        // }
+
+        $page = $request->query('page', 1);
+        $limit = $request->query('limit', 10);
+        $limit = $limit > 0 ? min($limit, 100) : 10;
+
+        // Fetch reviews where this user is reviewee
+        $query = Review::with('reviewer')
+            ->where('reviewee_id', $targetUserId)
+            ->orderByDesc('created_at');
+
+        $paginator = $query->paginate($limit, ['*'], 'page', $page);
+
+        $reviews = $paginator->getCollection()->map(function (Review $review) {
+            $reviewer = $review->reviewer;
+
+            return [
+                'reviewer_name' => $reviewer?->name ?? 'Anonymous',
+                'reviewer_image_url' => $reviewer?->profile_image ?? null,
+                'rating' => (int) $review->overall_rating,
+                'title' => $review->jobPost->title ?? 'Job Review',
+                'review_text' => $review->comment,
+                'review_date' => $review->created_at?->format('Y-m-d'),
+            ];
+        })->values()->all(); // transform Eloquent to API shape.[web:39]
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'User reviews fetched successfully.',
+            'total_results' => $paginator->total(),
+            'page' => $paginator->currentPage(),
+            'limit' => $paginator->perPage(),
+            'data' => $reviews,
+        ]);
+    }
+
+    /**
+     * Parse user_id format to actual user ID.
+     * contractor_001 → 1, laborer_002 → 2, apprentice_003 → 3, etc.
+     */
+    private function parseUserId(string $userId): ?int
+    {
+        if (! preg_match('/^(contractor|laborer|apprentice|subcontractor)_(\d+)$/', $userId, $matches)) {
+            return null;
+        }
+
+        return (int) $matches[2];
+    }
+}

@@ -44,6 +44,11 @@ return [
             'driver'   => 'jwt',
             'provider' => 'users',
         ],
+        // Admin 
+        'admin' => [
+            'driver' => 'session',
+            'provider' => 'admins', // Utilise la table users si vos admins sont dedans
+        ],
     ],
 
     /*
@@ -69,6 +74,10 @@ return [
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
 
+        'admins' => [ // 🔥 À vérifier/ajouter
+            'driver' => 'eloquent',
+            'model' => App\Models\Admin::class,
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',
