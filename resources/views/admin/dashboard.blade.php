@@ -103,7 +103,7 @@
     <div class="card">
         <div class="ch"><div class="ct">Weekly Registrations</div></div>
         <div class="cb">
-            <div class="barchart" id="regChart"></div>
+            <div id="regChart" style="display: flex; justify-content: space-between; align-items: flex-end; height: 220px; padding: 20px 10px 10px 10px; width: 100%;"></div>
         </div>
     </div>
 
@@ -183,8 +183,40 @@
 </div>
 
 @endsection
-
 @push('scripts')
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Ensure a fallback array exists to prevent JavaScript execution crashes
+        const regData = {!! json_encode($weeklyRegistrations ?? [0, 0, 0, 0, 0, 0, 0]) !!};
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        
+        // Safely determine the highest registration count
+        const max = regData.length > 0 ? Math.max(...regData) : 0;
+        const chart = document.getElementById('regChart');
+        
+        if (chart) {
+            chart.innerHTML = regData.map((val, i) => {
+                // Ensure the height remains valid if max is 0
+                const h = max > 0 ? Math.round((val / max) * 100) : 0;
+                
+                // Keep bars visible (e.g., 4%) even when count is 0 so the labels align perfectly at the base
+                const barHeight = h > 0 ? h : 4; 
+                
+                // Color mapping highlight rules
+                const bg = (val === max && max > 0) ? '#F5874F' : '#1B3D6F'; // --orange vs --navy hex fallbacks
+                
+                return `
+                    <div class="bw" style="display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; margin: 0 4px;">
+                        <div class="bar" style="height:${barHeight}%; background:${bg}; width: 100%; border-radius: 4px 4px 0 0; transition: height 0.3s ease;" title="${val} registrations"></div>
+                        <div class="blbl" style="font-size: 11px; color: var(--grey, #64748B); margin-top: 8px; text-align: center;">${days[i]}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+    });
+</script>
+@endpush
+{{-- @push('scripts')
 <script>
     // Build bar chart from PHP data
     const regData = @json($weeklyRegistrations);
@@ -202,4 +234,4 @@
         }).join('');
     }
 </script>
-@endpush
+@endpush --}}
