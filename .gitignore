@@ -23,3 +23,9 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /storage/app/firebase_credentials.json
+/public/insurance/*
+/public/listings/*
+/public/profile-documents/*
+/public/profiles/*
+/public/resumes/*
+/public/uploads/*
