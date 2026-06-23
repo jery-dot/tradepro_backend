@@ -60,13 +60,15 @@ class SubscriptionController extends Controller
 
         // 4. Statistiques globales pour la mise en page
         $userCount = User::count();
-        $jobCount  = JobPost::where('status', 'open')->count();
+        $jobCount  = JobPost::where('status', 'pending')->count();
+        $apprenticeCount = \App\Models\Opportunity::count();
 
         return view('admin.subscriptions', [
             'subscriptions' => $subscriptions,
             'plans'         => $plansStats, // Conservé sous la variable 'plans' pour votre vue
             'userCount'     => $userCount,
-            'jobCount'      => $jobCount
+            'jobCount'      => $jobCount,
+            'apprenticeCount' => $apprenticeCount
         ]);
     }
 
@@ -75,12 +77,14 @@ class SubscriptionController extends Controller
      */
     public function show(UserSubscription $subscription)
     {
+        // dd($subscription);
         $subscription->load(['user', 'plan']);
         
         $userCount = User::count();
-        $jobCount  = JobPost::where('status', 'open')->count();
-        
-        return view('admin.subscription-show', compact('subscription', 'userCount', 'jobCount'));
+        $jobCount  = JobPost::where('status', 'pending')->count();
+        $apprenticeCount = \App\Models\Opportunity::count();
+    
+        return view('admin.subscription-show', compact('subscription', 'userCount', 'jobCount', 'apprenticeCount'));
     }
 
     /**

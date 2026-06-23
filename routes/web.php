@@ -111,7 +111,7 @@ Route::middleware(['auth:admin', 'admin'])->prefix('admin')->name('admin.')->gro
     // ── Subscriptions ──────────────────────────────────────────────────────
     Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
         Route::get('/',               [SubscriptionController::class, 'index'])  ->name('index');
-        Route::get('/{sub}',          [SubscriptionController::class, 'show'])   ->name('show');
+        Route::get('/{subscription}',          [SubscriptionController::class, 'show'])   ->name('show');
         Route::patch('/{sub}/cancel', [SubscriptionController::class, 'cancel']) ->name('cancel');
     });
     Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions');

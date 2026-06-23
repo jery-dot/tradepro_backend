@@ -50,9 +50,10 @@ class MarketplaceController extends Controller
         ];
 
         $userCount = User::count();
-        $jobCount  = JobPost::where('status', 'open')->count();
+        $jobCount  = JobPost::where('status', 'pending')->count();
+        $apprenticeCount = \App\Models\Opportunity::count();
 
-        return view('admin.marketplace', compact('listings', 'totalCount', 'categoryCounts', 'userCount', 'jobCount'));
+        return view('admin.marketplace', compact('listings', 'totalCount', 'categoryCounts', 'userCount', 'jobCount', 'apprenticeCount'));
     }
 
     public function show(Listing $listing)
@@ -61,9 +62,10 @@ class MarketplaceController extends Controller
         $listing->load('owner');
         
         $userCount = User::count();
-        $jobCount  = JobPost::where('status', 'open')->count();
+        $jobCount  = JobPost::where('status', 'pending')->count();
+        $apprenticeCount = \App\Models\Opportunity::count();
         
-        return view('admin.marketplace-show', compact('listing', 'userCount', 'jobCount'));
+        return view('admin.marketplace-show', compact('listing', 'userCount', 'jobCount', 'apprenticeCount'));
     }
 
     public function destroy(Listing $listing)

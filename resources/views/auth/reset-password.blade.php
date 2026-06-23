@@ -45,9 +45,8 @@
 <body>
 <div class="auth-wrap">
 
-    <div class="auth-brand">
-        <div class="brand-icon">T</div>
-        <div class="brand-name">Trade<em>Pro</em></div>
+    <div class="login-brand" style="text-align: center; margin-bottom: 24px;">
+        <img src="{{ asset('images/logo.png') }}" alt="TradePro Logo" class="brand-logo" style="max-width: 180px; height: auto; object-fit: contain;">
     </div>
 
     <div class="auth-card">

@@ -19,7 +19,7 @@ class DashboardController extends Controller
         $stats = [
             'total_users'         => User::count(),
             'new_users_week'      => User::where('created_at', '>=', now()->startOfWeek())->count(),
-            'active_jobs'         => JobPost::where('status', 'open')->count(),
+            'active_jobs'         => JobPost::where('status', 'pending')->count(),
             'new_jobs_today'      => JobPost::whereDate('created_at', today())->count(),
             'apprenticeships'     => Opportunity::count(), // Géré par Opportunity
             'new_apprenticeships' => Opportunity::where('created_at', '>=', now()->subDays(7))->count(),
@@ -111,11 +111,13 @@ class DashboardController extends Controller
         // ── Sidebar counts ─────────────────────────────────────────────────
         $userCount        = $stats['total_users'];
         $jobCount         = $stats['active_jobs'];
+       
+        $apprenticeCount = Opportunity::count();
 
         return view('admin.dashboard', compact(
             'stats', 'userTypes', 'weeklyRegistrations',
             'recentActivity', 'mrrBreakdown',
-            'userCount', 'jobCount'
+            'userCount', 'jobCount', 'apprenticeCount'
         ));
     }
 

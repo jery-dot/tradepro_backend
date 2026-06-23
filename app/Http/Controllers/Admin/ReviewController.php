@@ -46,9 +46,10 @@ class ReviewController extends Controller
 
         // 4. Statistiques pour la barre latérale globale de l'admin
         $userCount = User::count();
-        $jobCount  = JobPost::where('status', 'open')->count();
+        $jobCount  = JobPost::where('status', 'pending')->count();
+        $apprenticeCount = \App\Models\Opportunity::count();
 
-        return view('admin.reviews', compact('reviews', 'stats', 'userCount', 'jobCount'));
+        return view('admin.reviews', compact('reviews', 'stats', 'userCount', 'jobCount', 'apprenticeCount'));
     }
 
     /**
@@ -59,9 +60,10 @@ class ReviewController extends Controller
         $review->load(['reviewer', 'reviewee', 'jobPost']);
         
         $userCount = User::count();
-        $jobCount  = JobPost::where('status', 'open')->count();
+        $jobCount  = JobPost::where('status', 'pending')->count();
+        $apprenticeCount = \App\Models\Opportunity::count();
         
-        return view('admin.reviews-show', compact('review', 'userCount', 'jobCount'));
+        return view('admin.reviews-show', compact('review', 'userCount', 'jobCount', 'apprenticeCount'));
     }
 
     /**

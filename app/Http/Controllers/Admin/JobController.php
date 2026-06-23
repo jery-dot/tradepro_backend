@@ -46,9 +46,10 @@ class JobController extends Controller
         $jobs       = $query->paginate(15)->withQueryString();
         $totalCount = JobPost::count();
         $userCount  = User::count();
-        $jobCount   = JobPost::where('status', 'open')->count();
+        $jobCount   = JobPost::where('status', 'pending')->count();
+        $apprenticeCount = \App\Models\Opportunity::count();
 
-        return view('admin.jobs', compact('jobs', 'totalCount', 'userCount', 'jobCount'));
+        return view('admin.jobs', compact('jobs', 'totalCount', 'userCount', 'jobCount', 'apprenticeCount'));
     }
 
     public function show(JobPost $job)
@@ -57,9 +58,10 @@ class JobController extends Controller
         $job->load(['owner', 'specialization', 'skills']);
         
         $userCount = User::count();
-        $jobCount  = JobPost::where('status', 'open')->count();
+        $jobCount  = JobPost::where('status', 'pending')->count();
+        $apprenticeCount = \App\Models\Opportunity::count();
         
-        return view('admin.jobs-show', compact('job', 'userCount', 'jobCount'));
+        return view('admin.jobs-show', compact('job', 'userCount', 'jobCount', 'apprenticeCount'));
     }
 
     public function destroy(JobPost $job)

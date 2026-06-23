@@ -59,7 +59,7 @@ Route::middleware('auth:api')->group(function () {
 
     // JobPost
     Route::controller(JobPostController::class)->group(function () {
-        Route::post('/create_job', 'createJob');
+        Route::post('/create_job', 'createJob'); 
         Route::get('/jobs', 'listJobs');
         Route::post('/edit_job', 'editJob');
         Route::post('/delete_job', 'deleteJob');

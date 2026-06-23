@@ -72,61 +72,64 @@ class User extends Authenticatable implements JWTSubject
             'job_requirements' => 'array',
         ];
     }
-/**
- * Récupère dynamiquement le niveau d'expérience depuis le modèle lié.
- */
-public function getExperienceDisplayAttribute(): string
-{
-    // Si c'est un ouvrier, on cherche dans la table laborer
-    if ($this->user_type === \App\Enums\UserType::LABORER) {
-        return $this->laborer?->experience_level ?? '—';
+
+    /**
+     * Récupère dynamiquement le niveau d'expérience depuis le modèle lié.
+     */
+    public function getExperienceDisplayAttribute(): string
+    {
+        // Si c'est un ouvrier, on cherche dans la table laborer
+        if ($this->user_type === \App\Enums\UserType::LABORER) {
+            return $this->laborer?->experience_level ?? '—';
+        }
+
+        // Si c'est un apprenti, on cherche dans la table apprentice
+        if ($this->user_type === \App\Enums\UserType::APPRENTICE) {
+            return $this->apprentice?->experience_level ?? '—';
+        }
+
+        // Pour les Contractors / Subcontractors
+        return '—';
     }
 
-    // Si c'est un apprenti, on cherche dans la table apprentice
-    if ($this->user_type === \App\Enums\UserType::APPRENTICE) {
-        return $this->apprentice?->experience_level ?? '—';
+    /**
+     * Analyse et centralise l'état de l'assurance pour tous les types de profils.
+     */
+    public function getInsuranceStatusAttribute(): array
+    {
+        // 1. CONTRACTOR
+        if ($this->user_type === \App\Enums\UserType::CONTRACTOR) {
+            $path = $this->contractor?->file_path; // Ajustez 'file_path' si la colonne s'appelle autrement
+            return [
+                'status' => $path ? 'Document' : 'No',
+                'url'    => $path ? asset($path) : null
+            ];
+        }
+
+        // 2. SUBCONTRACTOR
+        if ($this->user_type === \App\Enums\UserType::SUBCONTRACTOR) {
+            $path = $this->subcontractor?->insurance_file_path;
+            return [
+                'status' => $path ? 'Document' : 'No',
+                'url'    => $path ? asset($path) : null
+            ];
+        }
+
+        // 3. LABORER
+        if ($this->user_type === \App\Enums\UserType::LABORER) {
+            $hasInsurance = (bool) ($this->laborer?->has_insurance ?? false);
+            return ['status' => $hasInsurance ? 'Yes' : 'No', 'url' => null];
+        }
+
+        // 4. APPRENTICE
+        if ($this->user_type === \App\Enums\UserType::APPRENTICE) {
+            $hasInsurance = (bool) ($this->apprentice?->has_insurance ?? false);
+            return ['status' => $hasInsurance ? 'Yes' : 'No', 'url' => null];
+        }
+
+        return ['status' => '—', 'url' => null];
     }
 
-    // Pour les Contractors / Subcontractors
-    return '—';
-}
-/**
- * Analyse et centralise l'état de l'assurance pour tous les types de profils.
- */
-public function getInsuranceStatusAttribute(): array
-{
-    // 1. CONTRACTOR
-    if ($this->user_type === \App\Enums\UserType::CONTRACTOR) {
-        $path = $this->contractor?->file_path; // Ajustez 'file_path' si la colonne s'appelle autrement
-        return [
-            'status' => $path ? 'Document' : 'No',
-            'url'    => $path ? asset('storage/' . $path) : null
-        ];
-    }
-
-    // 2. SUBCONTRACTOR
-    if ($this->user_type === \App\Enums\UserType::SUBCONTRACTOR) {
-        $path = $this->subcontractor?->insurance_file_path;
-        return [
-            'status' => $path ? 'Document' : 'No',
-            'url'    => $path ? asset('storage/' . $path) : null
-        ];
-    }
-
-    // 3. LABORER
-    if ($this->user_type === \App\Enums\UserType::LABORER) {
-        $hasInsurance = (bool) ($this->laborer?->has_insurance ?? false);
-        return ['status' => $hasInsurance ? 'Yes' : 'No', 'url' => null];
-    }
-
-    // 4. APPRENTICE
-    if ($this->user_type === \App\Enums\UserType::APPRENTICE) {
-        $hasInsurance = (bool) ($this->apprentice?->has_insurance ?? false);
-        return ['status' => $hasInsurance ? 'Yes' : 'No', 'url' => null];
-    }
-
-    return ['status' => '—', 'url' => null];
-}
     // JWT methods
     public function getJWTIdentifier()
     {

@@ -29,4 +29,26 @@ enum UserType: int
             self::cases()
         );
     }
+
+    // 🔥 Ajout du mapping des classes CSS (Badges)
+    public function badgeClass(): string
+    {
+        return match ($this) {
+            self::CONTRACTOR    => 'bn',
+            self::SUBCONTRACTOR => 'bo',
+            self::LABORER       => 'bg',
+            self::APPRENTICE    => 'bp',
+        };
+    }
+
+    // 🔥 Ajout du mapping des couleurs hexadécimales
+    public function color(): string
+    {
+        return match ($this) {
+            self::CONTRACTOR    => '#1B3D6F',
+            self::SUBCONTRACTOR => '#F5874F',
+            self::LABORER       => '#27AE60',
+            self::APPRENTICE    => '#8E44AD',
+        };
+    }
 }

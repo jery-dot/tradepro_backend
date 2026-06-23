@@ -66,11 +66,12 @@ class UserController extends Controller
 
         // Sidebar counts
         $userCount = $totalCount;
-        $jobCount  = JobPost::where('status', 'open')->count();
+        $jobCount  = JobPost::where('status', 'pending')->count();
 
+        $apprenticeCount = \App\Models\Opportunity::count();
         // dd($users);
 
-        return view('admin.users', compact('users', 'counts', 'totalCount', 'userCount', 'jobCount'));
+        return view('admin.users', compact('users', 'counts', 'totalCount', 'userCount', 'jobCount', 'apprenticeCount'));
     }
 
     public function show(User $user)
@@ -82,9 +83,10 @@ class UserController extends Controller
         $user->load(['laborer.specialization', 'contractor', 'apprentice']);
 
         $userCount = User::count();
-        $jobCount  = JobPost::where('status', 'open')->count();
+        $jobCount  = JobPost::where('status', 'pending')->count();
+        $apprenticeCount = \App\Models\Opportunity::count();
         
-        return view('admin.user-show', compact('user', 'userCount', 'jobCount'));
+        return view('admin.user-show', compact('user', 'userCount', 'jobCount', 'apprenticeCount'));
     }
 
     public function destroy(User $user)
@@ -92,7 +94,7 @@ class UserController extends Controller
         $userName = $user->name;
         $user->delete();
         
-        return redirect()->route('admin.users.index') // Aligné sur la nomenclature classique de vos routes
+        return redirect()->route('admin.users') // Aligné sur la nomenclature classique de vos routes
             ->with('status', $userName . ' has been deleted.');
     }
 

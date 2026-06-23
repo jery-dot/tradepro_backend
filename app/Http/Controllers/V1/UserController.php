@@ -818,6 +818,7 @@ class UserController extends Controller
             'available_today' => $user->available_today,
 
             // --- ADDED THIS SECTION FOR FLUTTER HOME SCREEN ---
+            'status'=> $user->status,
             'active_subscription' => $user->activeSubscription ? [
                 'id' => $user->activeSubscription->id,
                 'stripe_status' => $user->activeSubscription->stripe_status,
