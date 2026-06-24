@@ -26,10 +26,10 @@
                class="tab {{ request('tab', 'opportunities') === 'opportunities' ? 'act' : '' }}">
                 Opportunities ({{ $opportunityCount }})
             </a>
-            <a href="{{ route('admin.apprenticeships', ['tab' => 'applicants']) }}"
+            {{-- <a href="{{ route('admin.apprenticeships', ['tab' => 'applicants']) }}"
                class="tab {{ request('tab') === 'applicants' ? 'act' : '' }}">
                 Applicants ({{ $applicantCount }})
-            </a>
+            </a> --}}
         </div>
     </div>
 
@@ -46,7 +46,7 @@
                        value="{{ request('search') }}"/>
             </div>
 
-            <select class="fsel" name="trade" onchange="this.form.submit()">
+            {{-- <select class="fsel" name="trade" onchange="this.form.submit()">
                 <option value="all">All Trade Types</option>
                 @foreach(['Carpentry','Electrical','Plumbing','Roofing','Concrete','Framing','HVAC'] as $trade)
                     <option value="{{ strtolower($trade) }}"
@@ -54,7 +54,7 @@
                         {{ $trade }}
                     </option>
                 @endforeach
-            </select>
+            </select> --}}
 
             {{-- <select class="fsel" name="location" onchange="this.form.submit()">
                 <option value="all">All Locations</option>
@@ -66,80 +66,83 @@
 
         {{-- OPPORTUNITIES TABLE --}}
         @if(request('tab', 'opportunities') === 'opportunities')
-          <div class="tw">
-            <table>
-                <thead>
-                    <tr>
-                        <th><input type="checkbox"/></th>
-                        <th>Company</th>
-                        <th>Opportunity Title</th>
-                        <th>Compensation</th>
-                        <th>Location</th>
-                        <th>Start Date</th>
-                        <th>Duration</th>
-                        <th>Questions</th>
-                        <th>Applicants</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($opportunities as $opp)
-                        @php
-                            // Fallback configuration if status isn't explicitly set
-                            $status = $opp->status ?? 'open';
-                            $statusBadge = $status === 'open' ? 'bg' : 'br';
-                            
-                            // Resolve company name via the user relationship safely
-                            $companyName = $opp->user->company_name ?? $opp->user->name ?? 'Trade Pro Partner';
-                        @endphp
+            <div class="tw">
+                <table>
+                    <thead>
                         <tr>
-                            <td><input type="checkbox" value="{{ $opp->id }}"/></td>
-                            <td>
-                                <div class="uc">
-                                    <div class="ua" style="background:var(--purple)">
-                                        {{ strtoupper(substr($companyName, 0, 2)) }}
+                            <th><input type="checkbox"/></th>
+                            <th>Company</th>
+                            <th>Opportunity Title</th>
+                            <th>Description</th> <th>Compensation</th>
+                            <th>Location</th>
+                            <th>Start Date</th>
+                            <th>Duration</th>
+                            <th>Questions</th>
+                            <th>Applicants</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($opportunities as $opp)
+                            @php
+                                // Fallback configuration if status isn't explicitly set
+                                $status = $opp->status ?? 'open';
+                                $statusBadge = $status === 'open' ? 'bg' : 'br';
+                                
+                                // Resolve company name via the user relationship safely
+                                $companyName = $opp->user->company_name ?? $opp->user->name ?? 'Trade Pro Partner';
+                            @endphp
+                            <tr>
+                                <td><input type="checkbox" value="{{ $opp->id }}"/></td>
+                                <td>
+                                    <div class="uc">
+                                        <div class="ua" style="background:var(--purple)">
+                                            {{ strtoupper(substr($companyName, 0, 2)) }}
+                                        </div>
+                                        <div class="un">{{ $companyName }}</div>
                                     </div>
-                                    <div class="un">{{ $companyName }}</div>
-                                </div>
-                            </td>
-                            <td style="font-size:12px; font-weight: 500;">{{ $opp->title }}</td>
-                            <td style="font-size:13px; font-weight:700; color:var(--navy)">
-                                @if($opp->compensation_paid)
-                                    ${{ number_format($opp->total_pay_offering, 2) }}
-                                @else
-                                    Unpaid
-                                @endif
-                            </td>
-                            <td style="font-size:12.5px; color:var(--grey)">{{ $opp->city }}</td>
-                            <td style="font-size:12.5px; color:var(--grey)">
-                                {{ $opp->apprenticeship_start_date ? \Carbon\Carbon::parse($opp->apprenticeship_start_date)->format('M Y') : 'N/A' }}
-                            </td>
-                            <td style="font-size:12.5px; color:var(--grey)">{{ $opp->duration_weeks }} Weeks</td>
-                            <td style="text-align:center"><span class="bdg bn">{{ $opp->questions_count ?? 0 }} questions</span></td>
-                            <td style="text-align:center"><span class="bdg bp">{{ $opp->applicants_count ?? 0 }} applied</span></td>
-                            <td><span class="bdg {{ $statusBadge }}">{{ ucfirst($status) }}</span></td>
-                            <td>
-                                <div style="display:flex; gap:4px">
-                                    <a href="{{ route('admin.apprenticeships.show', $opp->id) }}" class="btn btn-ol btn-xs">View</a>
-                                    <form method="POST" action="{{ route('admin.apprenticeships.destroy', $opp->id) }}" onsubmit="return confirm('Delete this opportunity?')">
-                                        @csrf 
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-dn btn-xs">Del</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="11">
-                                <div style="padding:40px; text-align:center; color:var(--grey)">No opportunities found.</div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                                </td>
+                                <td style="font-size:12px; font-weight: 500;">{{ $opp->title }}</td>
+                                <td style="max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; color: var(--grey);" title="{{ $opp->description }}">
+                                    {{ Str::limit($opp->apprenticeship_description, 60, '...') }}
+                                </td>
+                                <td style="font-size:13px; font-weight:700; color:var(--navy)">
+                                    @if($opp->compensation_paid)
+                                        ${{ number_format($opp->total_pay_offering, 2) }}
+                                    @else
+                                        Unpaid
+                                    @endif
+                                </td>
+                                <td style="font-size:12.5px; color:var(--grey)">{{ $opp->city }}</td>
+                                <td style="font-size:12.5px; color:var(--grey)">
+                                    {{ $opp->apprenticeship_start_date ? \Carbon\Carbon::parse($opp->apprenticeship_start_date)->format('M Y') : 'N/A' }}
+                                </td>
+                                <td style="font-size:12.5px; color:var(--grey)">{{ $opp->duration_weeks }} Weeks</td>
+                                <td style="text-align:center"><span class="bdg bn">{{ $opp->questions_count ?? 0 }} questions</span></td>
+                                <td style="text-align:center"><span class="bdg bp">{{ $opp->applicants_count ?? 0 }} applied</span></td>
+                                <td><span class="bdg {{ $statusBadge }}">{{ ucfirst($status) }}</span></td>
+                                <td>
+                                    <div style="display:flex; gap:4px">
+                                        <a href="{{ route('admin.apprenticeships.show', $opp->id) }}" class="btn btn-ol btn-xs">View</a>
+                                        <form method="POST" action="{{ route('admin.apprenticeships.destroy', $opp->id) }}" onsubmit="return confirm('Delete this opportunity?')">
+                                            @csrf 
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-dn btn-xs">Del</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="11">
+                                    <div style="padding:40px; text-align:center; color:var(--grey)">No opportunities found.</div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
         {{-- APPLICANTS TABLE --}}
         @else

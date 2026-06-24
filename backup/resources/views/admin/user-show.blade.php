@@ -90,7 +90,7 @@
                 <span class="dpk">Insurance Proof</span>
                 <span class="dpv">
                     @if($insuranceData['url'])
-                        <a href="{{ $insuranceData['url'] }}" target="_blank" class="bdg bn" style="text-decoration:none">View Document ↗</a>
+                        <a href="{{ asset($insuranceData['url']) }}" target="_blank" class="bdg bn" style="text-decoration:none">View Document ↗</a>
                     @else
                         <span class="bdg bgr">{{ $insuranceData['status'] }}</span>
                     @endif

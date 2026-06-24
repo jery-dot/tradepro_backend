@@ -61,9 +61,8 @@
         </form>
 
         {{-- Table --}}
-        <div class="tw" style="max-width: 100%;">
-            <div class="table-responsive" style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 15px;">
-                <table style="width: 100%; min-width: 1300px; table-layout: auto; border-collapse: collapse;">
+        <div class="table-responsive">
+                <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr>
                             <th><input type="checkbox"/></th>
@@ -148,7 +147,6 @@
                         @endforelse
                     </tbody>
                 </table>
-            </div>
         </div>
     </div>
 

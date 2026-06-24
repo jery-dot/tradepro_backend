@@ -61,7 +61,17 @@
             <div class="dp-row"><span class="dpk">Duration</span><span class="dpv">{{ $job->formatted_duration }}</span></div>
             <div class="dp-row"><span class="dpk">Available Today</span><span class="dpv">{{ $job->is_available ? 'Yes' : 'No' }}</span></div>
             <div class="dp-row"><span class="dpk">Featured Posting</span><span class="dpv">{{ $job->is_featured ? 'Yes — $10 fee' : 'No' }}</span></div>
-            <div class="dp-row"><span class="dpk">Posted By</span><span class="dpv">{{ $job->poster->first_name ?? '' }} {{ $job->poster->last_name ?? '' }}</span></div>
+            {{-- <div class="dp-row"><span class="dpk">Posted By</span><span class="dpv">{{ $job->poster->name ?? '' }} {{ $job->poster->last_name ?? '' }}</span></div> --}}
+            <div class="dp-row">
+                <span class="dpk">Posted By</span>
+                <span class="dpv" style="font-weight: 600; color: var(--navy);">
+                    @if($job->owner)
+                        {{ $job->owner->name ?? trim(($job->owner->name ?? '') . ' ' . ($job->owner->last_name ?? '')) }}
+                    @else
+                        System / Unknown
+                    @endif
+                </span>
+            </div>
 
             <div class="dp-sec">Skills Required</div>
             <div style="padding:8px 0;display:flex;flex-wrap:wrap;gap:4px">
@@ -72,7 +82,7 @@
 
             <div class="dp-sec">Job Description</div>
             <div style="font-size:13px;color:var(--grey);line-height:1.7;padding:8px 0">
-                {{ $job->description }}
+                {{ $job->job_description }}
             </div>
         </div>
     </div>

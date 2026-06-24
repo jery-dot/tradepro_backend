@@ -61,90 +61,94 @@
         </form>
 
         {{-- Table --}}
-        <div class="tw">
-            <table>
-                <thead>
-                    <tr>
-                        <th><input type="checkbox"/></th>
-                        <th>Job Code</th>
-                        {{-- <th>Job Title</th>
-                        <th>Company</th> --}}
-                        <th>Type</th>
-                        <th>Skills Needed</th>
-                        <th>Pay/hr</th>
-                        <th>Location</th>
-                        <th>Duration</th>
-                        <th>Start Date</th>
-                        <th>Featured</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($jobs as $job) 
-                        @php
-                            $typeBadge = ['contractor'=>'bn','subcontractor'=>'bo','labour'=>'bg'][$job->specialization->name] ?? 'bgr';
-                            $typeLabel = ['contractor'=>'Contractor','subcontractor'=>'Sub-contractor','labour'=>'Labour'][$job->specialization->name] ?? $job->specialization->name;
-                            $statusBadge = ['open'=>'bg','pending'=>'ba','completed'=>'bt','closed'=>'bgr'][$job->status] ?? 'bgr';
-                        @endphp
+        <div class="tw" style="max-width: 100%;">
+            <div class="table-responsive" style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 15px;">
+                <table style="width: 100%; min-width: 1300px; table-layout: auto; border-collapse: collapse;">
+                    <thead>
                         <tr>
-                            <td><input type="checkbox" value="{{ $job->id }}"/></td>
-                            {{-- <td>
-                                <div class="un">{{ $job->title }}</div>
-                                <div class="ue">{{ $job->company_name }} ★{{ $job->company_rating }}</div>
-                            </td> --}}
-                            <td style="font-size:12.5px;color:var(--grey)">{{ $job->job_code }}</td>
-                            <td><span class="bdg {{ $typeBadge }}">{{ $job->specialization->name }}</span></td>
-                            <td style="max-width:140px">
-                                @foreach(json_decode($job->skills) as $skill)
-                                    <span class="skill-chip">{{ $skill->name }}</span>
-                                @endforeach
-                            </td>
-                            <td style="font-size:13px;font-weight:700;color:var(--navy)">
-                                @php
-                                    $currencySymbol = ['USD' => '$', 'EUR' => '€', 'GBP' => '£'][$job->pay_rate_currency] ?? $job->pay_rate_currency;
-                                    $rateTypeShort  = ['hour' => 'hr', 'monthly' => 'mo', 'yearly' => 'yr'][$job->pay_rate_type] ?? $job->pay_rate_type;
-                                @endphp
+                            <th><input type="checkbox"/></th>
+                            <th>Job Code</th>
+                            <th>Posted By</th> 
+                            <th>Type</th>
+                            <th>Skills Needed</th>
+                            <th>Description</th> 
+                            <th>Pay/hr</th>
+                            <th>Location</th>
+                            <th>Duration</th>
+                            <th>Start Date</th>
+                            <th>Featured</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($jobs as $job) 
+                            @php
+                                $typeBadge = ['contractor'=>'bn','subcontractor'=>'bo','labour'=>'bg'][$job->specialization->name] ?? 'bgr';
+                                $typeLabel = ['contractor'=>'Contractor','subcontractor'=>'Sub-contractor','labour'=>'Labour'][$job->specialization->name] ?? $job->specialization->name;
+                                $statusBadge = ['open'=>'bg','pending'=>'ba','completed'=>'bt','closed'=>'bgr'][$job->status] ?? 'bgr';
+                            @endphp
+                            <tr>
+                                <td><input type="checkbox" value="{{ $job->id }}"/></td>
+                                <td style="font-size:12.5px;color:var(--grey)">{{ $job->job_code }}</td>
+                                
+                                <td>
+                                    <div style="font-weight: 600; color: var(--navy)">{{ $job->owner?->name ?? 'Unknown User' }}</div>
+                                    <div style="font-size: 11px; color: var(--grey)">{{ $job->owner?->email ?? '' }}</div>
+                                </td>
 
-                                {{ $currencySymbol }}{{ $job->pay_rate_amount }}/{{ $rateTypeShort }}
-                            </td>
-                            {{-- <td style="font-size:13px;font-weight:700;color:var(--navy)">
-                                {{ $job->pay_rate_currency }}{{ $job->pay_rate_amount }}/{{ $job->pay_rate_type }}
-                            </td> --}}
-                            {{-- <td style="font-size:13px;font-weight:700;color:var(--navy)">${{ $job->pay_rate_amount }}/hr</td> --}}
-                            <td style="font-size:12.5px;color:var(--grey)">{{ $job->formatted_location }}</td>
-                            <td style="font-size:12.5px;color:var(--grey)">{{ $job->formatted_duration }}</td>
-                            <td style="font-size:12.5px;color:var(--grey)">{{ \Carbon\Carbon::parse($job->start_date)->format('d M Y') }}</td>
-                            <td style="text-align:center">
-                                <span class="bdg {{ $job->is_featured ? 'bo' : 'bgr' }}">
-                                    {{ $job->is_featured ? 'Featured' : 'No' }}
-                                </span>
-                            </td>
-                            <td><span class="bdg {{ $statusBadge }}">{{ $job->status }}</span></td>
-                            <td>
-                                <div style="display:flex;gap:4px">
-                                    <a href="{{ route('admin.jobs.show', $job->id) }}"
-                                       class="btn btn-ol btn-xs">View</a>
-                                    <form method="POST"
-                                          action="{{ route('admin.jobs.destroy', $job->id) }}"
-                                          onsubmit="return confirm('Delete this job?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-dn btn-xs">Del</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="12">
-                                <div style="padding:40px;text-align:center;color:var(--grey)">
-                                    No jobs found matching your filters.
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                <td><span class="bdg {{ $typeBadge }}">{{ $job->specialization->name }}</span></td>
+                                <td style="max-width:140px">
+                                    @foreach(json_decode($job->skills) as $skill)
+                                        <span class="skill-chip">{{ $skill->name }}</span>
+                                    @endforeach
+                                </td>
+                                
+                                <td style="max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; color: var(--grey);" title="{{ $job->description }}">
+                                    {{ Str::limit($job->description, 60, '...') }}
+                                </td>
+                                
+                                <td style="font-size:13px;font-weight:700;color:var(--navy)">
+                                    @php
+                                        $currencySymbol = ['USD' => '$', 'EUR' => '€', 'GBP' => '£'][$job->pay_rate_currency] ?? $job->pay_rate_currency;
+                                        $rateTypeShort  = ['hour' => 'hr', 'monthly' => 'mo', 'yearly' => 'yr'][$job->pay_rate_type] ?? $job->pay_rate_type;
+                                    @endphp
+
+                                    {{ $currencySymbol }}{{ $job->pay_rate_amount }}/{{ $rateTypeShort }}
+                                </td>
+                                <td style="font-size:12.5px;color:var(--grey)">{{ $job->formatted_location }}</td>
+                                <td style="font-size:12.5px;color:var(--grey)">{{ $job->formatted_duration }}</td>
+                                <td style="font-size:12.5px;color:var(--grey)">{{ \Carbon\Carbon::parse($job->start_date)->format('d M Y') }}</td>
+                                <td style="text-align:center">
+                                    <span class="bdg {{ $job->is_featured ? 'bo' : 'bgr' }}">
+                                        {{ $job->is_featured ? 'Featured' : 'No' }}
+                                    </span>
+                                </td>
+                                <td><span class="bdg {{ $statusBadge }}">{{ $job->status }}</span></td>
+                                <td>
+                                    <div style="display:flex;gap:4px">
+                                        <a href="{{ route('admin.jobs.show', $job->id) }}" class="btn btn-ol btn-xs">View</a>
+                                        <form method="POST"
+                                            action="{{ route('admin.jobs.destroy', $job->id) }}"
+                                            onsubmit="return confirm('Delete this job?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-dn btn-xs">Del</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="13"> 
+                                    <div style="padding:40px;text-align:center;color:var(--grey)">
+                                        No jobs found matching your filters.
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

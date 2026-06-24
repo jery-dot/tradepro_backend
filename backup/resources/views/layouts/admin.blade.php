@@ -10,20 +10,38 @@
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{{ asset('images/logo.png') }}"
+    />
 
     {{-- Global Admin CSS --}}
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}"/>
 
     {{-- Page-specific CSS --}}
+    <style>
+        .table-responsive table {
+            width: 100%;
+            border-collapse: collapse;
+            /* Forces the table to maintain its full required width, enabling horizontal scrolling */
+            min-width: 1200px; 
+        }
+    </style>
     @stack('styles')
+    
 </head>
 <body>
 
     {{-- ── Sidebar ────────────────────────────────────────────── --}}
     <aside class="sb" id="sb">
-        <div class="sb-brand">
-            <div class="sb-logo">T</div>
-            <span class="sb-name">Trade<em>Pro</em></span>
+       <div class="sb-brand" style="display: flex; align-items: center; gap: 10px;">
+            <div class="sb-logo" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;">
+                <img src="{{ asset('images/logo.png') }}" 
+                    alt="TradePro Logo" 
+                    style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            {{-- <span class="sb-name">Trade<em>Pro</em></span> --}}
         </div>
 
         <nav class="sb-nav">

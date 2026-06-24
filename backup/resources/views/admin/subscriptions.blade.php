@@ -112,13 +112,14 @@
     @forelse($subscriptions as $sub)
         @php
             // Safe fallback properties if user is deleted or missing
-            $userTypeEnum = $sub->user?->type; // This will automatically be an instance of UserType Enum
+            $userTypeEnum = $sub->user?->user_type; // This will automatically be an instance of UserType Enum
             $firstName = $sub->user?->name ?? 'User';
             $lastName = $sub->user ? "" : 'Deleted';
             
             // Resolve badges and labels cleanly using your Enum methods
             $typeBadge = $userTypeEnum ? $userTypeEnum->badgeClass() : 'bgr';
             $typeLabel = $userTypeEnum ? $userTypeEnum->label() : 'Unknown';
+            // dd($userTypeEnum);
             
             $planBadge = ['Contractor' => 'bo', 'Labourer' => 'bn', 'Apprentice' => 'bp'][$sub->plan_name] ?? 'bgr';
             
