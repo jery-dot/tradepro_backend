@@ -186,35 +186,68 @@
 @push('scripts')
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Ensure a fallback array exists to prevent JavaScript execution crashes
         const regData = {!! json_encode($weeklyRegistrations ?? [0, 0, 0, 0, 0, 0, 0]) !!};
         const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
         
-        // Safely determine the highest registration count
         const max = regData.length > 0 ? Math.max(...regData) : 0;
         const chart = document.getElementById('regChart');
         
         if (chart) {
             chart.innerHTML = regData.map((val, i) => {
-                // Ensure the height remains valid if max is 0
                 const h = max > 0 ? Math.round((val / max) * 100) : 0;
                 
-                // Keep bars visible (e.g., 4%) even when count is 0 so the labels align perfectly at the base
-                const barHeight = h > 0 ? h : 4; 
-                
-                // Color mapping highlight rules
-                const bg = (val === max && max > 0) ? '#F5874F' : '#1B3D6F'; // --orange vs --navy hex fallbacks
+                // Allow enough top-clearance for the floating value text inside the container
+                const barHeight = h > 0 ? (h * 0.8) : 4; 
+                const bg = (val === max && max > 0) ? '#F5874F' : '#1B3D6F';
                 
                 return `
-                    <div class="bw" style="display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; margin: 0 4px;">
-                        <div class="bar" style="height:${barHeight}%; background:${bg}; width: 100%; border-radius: 4px 4px 0 0; transition: height 0.3s ease;" title="${val} registrations"></div>
-                        <div class="blbl" style="font-size: 11px; color: var(--grey, #64748B); margin-top: 8px; text-align: center;">${days[i]}</div>
+                    <div class="bw" 
+                         onclick="showBarValue('${days[i]}', ${val})"
+                         style="display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; margin: 0 4px; position: relative; cursor: pointer;">
+                        
+                        <div class="v-lbl" style="font-size: 11px; font-weight: 700; color: #1B3D6F; margin-bottom: 4px; opacity: ${val > 0 ? '1' : '0.3'}">
+                            ${val}
+                        </div>
+
+                        <div class="bar" 
+                             style="height:${barHeight}%; background:${bg}; width: 100%; border-radius: 4px 4px 0 0; transition: all 0.2s ease;" 
+                             data-day="${days[i]}" 
+                             data-value="${val}">
+                        </div>
+                        
+                        <div class="blbl" style="font-size: 11px; font-weight: 600; color: #64748B; margin-top: 8px; text-align: center;">
+                            ${days[i]}
+                        </div>
                     </div>
                 `;
             }).join('');
         }
     });
+
+    // 4. Click Function for both Mobile and Desktop taps
+    function showBarValue(day, value) {
+        // You can change this to look however you like, such as updating an external text element
+        console.log(`Clicked ${day}: ${value} registrations`);
+        
+        // Optional: Remove previous highlights and highlight the currently selected item
+        document.querySelectorAll('.bar').forEach(b => b.style.transform = 'scale(1)');
+        const clickedBar = event.currentTarget.querySelector('.bar');
+        if(clickedBar) {
+            clickedBar.style.transform = 'scaleY(1.05)';
+        }
+    }
 </script>
+
+<style>
+    /* Make the bars visually pop on hover */
+    .bw:hover .bar {
+        filter: brightness(1.15);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .bw:active .bar {
+        transform: scale(0.95);
+    }
+</style>
 @endpush
 {{-- @push('scripts')
 <script>

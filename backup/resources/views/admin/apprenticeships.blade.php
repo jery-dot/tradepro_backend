@@ -66,7 +66,7 @@
 
         {{-- OPPORTUNITIES TABLE --}}
         @if(request('tab', 'opportunities') === 'opportunities')
-            <div class="tw">
+            <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>

@@ -92,7 +92,7 @@
     <div class="card">
         <div class="ch"><div class="ct">Admin Actions</div></div>
         <div class="cb" style="display:flex;flex-direction:column;gap:10px">
-            @if($listing->is_active)
+            {{-- @if($listing->is_active)
                 <form method="POST" action="{{ route('admin.marketplace.deactivate', $listing->id) }}">
                     @csrf @method('PATCH')
                     <button class="btn btn-am" style="width:100%">Deactivate Listing</button>
@@ -102,12 +102,7 @@
                     @csrf @method('PATCH')
                     <button class="btn btn-pr" style="width:100%">Activate Listing</button>
                 </form>
-            @endif
-
-            <form method="POST" action="{{ route('admin.marketplace.flag', $listing->id) }}">
-                @csrf @method('PATCH')
-                <button class="btn btn-ol" style="width:100%">Flag for Review</button>
-            </form>
+            @endif --}}
 
             <form method="POST" action="{{ route('admin.marketplace.destroy', $listing->id) }}"
                   onsubmit="return confirm('Permanently remove this listing?')">

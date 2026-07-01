@@ -21,11 +21,43 @@
 
     {{-- Page-specific CSS --}}
     <style>
+        /* Add or update these rules in your layout's <style> tag */
+
+        html, body {
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+
+        /* Force the main container to limit its horizontal footprint */
+        .main {
+            min-width: 0;
+            max-width: 100%;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Force the card body containing the table to contract on narrow viewports */
+        .card, .cb {
+            min-width: 0;
+            max-width: 100%;
+            width: 100%;
+        }
+
+        /* Upgrade your responsive class to bypass any flex container stretching */
+        .table-responsive {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Ensure the table itself actually expands to trigger the scrollbar */
         .table-responsive table {
             width: 100%;
-            border-collapse: collapse;
-            /* Forces the table to maintain its full required width, enabling horizontal scrolling */
-            min-width: 1200px; 
+            min-width: 1200px !important; /* Adjust if your columns need more breathing room */
         }
     </style>
     @stack('styles')

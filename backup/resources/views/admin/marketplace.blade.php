@@ -57,7 +57,7 @@
             </div>
         </form>
 
-        <div class="tw">
+        <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
