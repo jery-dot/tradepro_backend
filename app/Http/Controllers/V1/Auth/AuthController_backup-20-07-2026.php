@@ -68,7 +68,6 @@ class AuthController extends Controller
             // 'user_type' => $validated['user_type'],
             'latitude' => $location['latitude'],
             'longitude' => $location['longitude'],
-            'status' => 1
         ]);
 
         // Update the user's FCM token if provided
